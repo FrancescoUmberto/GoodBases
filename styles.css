@@ -1,0 +1,416 @@
+/* ============================================================
+   Notion Bases — table view styled to Notion's design language
+   Typography, borders, hover states, and pills match Notion.
+   ============================================================ */
+
+.ntn-root {
+	--ntn-text: rgb(55, 53, 47);
+	--ntn-text-muted: rgba(55, 53, 47, 0.65);
+	--ntn-border: rgb(233, 233, 231);
+	--ntn-hover: rgba(55, 53, 47, 0.04);
+	--ntn-active: rgba(55, 53, 47, 0.08);
+	font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont,
+		"Segoe UI", Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	color: var(--ntn-text);
+	overflow-x: auto;
+	padding-bottom: 24px;
+}
+
+.theme-dark .ntn-root {
+	--ntn-text: rgba(255, 255, 255, 0.81);
+	--ntn-text-muted: rgba(255, 255, 255, 0.443);
+	--ntn-border: rgb(47, 47, 47);
+	--ntn-hover: rgba(255, 255, 255, 0.055);
+	--ntn-active: rgba(255, 255, 255, 0.03);
+}
+
+/* ---------------- Table chrome ---------------- */
+
+/* width: max-content lets every column take its natural width; min-width
+   keeps the table filling wide panes. In narrow containers (embeds, both
+   reading and edit mode) the table overflows into .ntn-root's horizontal
+   scroll instead of crushing every column to ~30px.
+   !important is required: in reading mode the view sits inside
+   .markdown-rendered, where Obsidian's and themes' `table` rules
+   (e.g. `.markdown-rendered table { width: 100% }`) outrank a bare
+   class selector and re-crush the columns. */
+.ntn-root .ntn-table {
+	border-collapse: collapse;
+	display: table !important;
+	table-layout: auto !important;
+	width: max-content !important;
+	min-width: 100% !important;
+	max-width: none !important;
+	border-top: 1px solid var(--ntn-border);
+	margin: 0;
+}
+
+.ntn-root .ntn-th {
+	font-weight: 400;
+	font-size: 14px;
+	color: var(--ntn-text-muted);
+	text-align: left;
+	padding: 0 8px;
+	height: 34px;
+	border-bottom: 1px solid var(--ntn-border);
+	/* Reading-mode th rules from Obsidian/themes wrap header text — keep
+	   headers on one line so columns size to their natural width. */
+	white-space: nowrap !important;
+	word-break: normal !important;
+	user-select: none;
+}
+
+.ntn-th-icon {
+	font-size: 12px;
+	margin-right: 6px;
+	opacity: 0.7;
+	letter-spacing: 0.5px;
+}
+
+.ntn-vlines .ntn-th,
+.ntn-vlines .ntn-td {
+	border-right: 1px solid var(--ntn-border);
+}
+
+.ntn-vlines .ntn-th:last-child,
+.ntn-vlines .ntn-td:last-child {
+	border-right: none;
+}
+
+.ntn-root .ntn-td {
+	padding: 6px 8px;
+	min-height: 32px;
+	border-bottom: 1px solid var(--ntn-border);
+	vertical-align: middle;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 280px;
+	/* Obsidian's editor/reading-mode styles set break-word/break-all;
+	   in a squeezed column that wraps text one character per line. */
+	word-break: normal !important;
+	overflow-wrap: normal !important;
+}
+
+/* Rendered values (links, dates…) carry their own white-space and
+   word-break rules in reading mode — force them to stay on one line;
+   the cell truncates with ellipsis. Scoped so "Wrap cell content"
+   (.ntn-wrap) can still wrap, but never break inside words. */
+.ntn-root:not(.ntn-wrap) .ntn-cell,
+.ntn-root:not(.ntn-wrap) .ntn-cell * {
+	white-space: nowrap !important;
+}
+
+.ntn-root .ntn-cell,
+.ntn-root .ntn-cell * {
+	word-break: normal !important;
+	overflow-wrap: normal !important;
+}
+
+.ntn-wrap .ntn-td {
+	white-space: normal;
+}
+
+/* Notion's signature: whole-row hover wash */
+.ntn-row {
+	transition: background 20ms ease-in;
+}
+
+.ntn-row:hover {
+	background: var(--ntn-hover);
+}
+
+/* ---------------- Title column ---------------- */
+
+/* Width on the header cell pins the column in auto table layout —
+   min-width on td alone is unreliable and lets the column collapse. */
+.ntn-th.ntn-col-title {
+	width: 280px;
+	min-width: 280px;
+}
+
+.ntn-td.ntn-col-title {
+	min-width: 280px;
+}
+
+.ntn-title-wrap {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	position: relative;
+	min-width: 0;
+	padding-right: 4px;
+}
+
+.ntn-page-icon {
+	font-size: 14px;
+	flex-shrink: 0;
+	filter: grayscale(1);
+	opacity: 0.8;
+}
+
+.ntn-title-text {
+	font-weight: 500;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.16);
+	cursor: pointer;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: 0 1 auto;
+	min-width: 0;
+}
+
+.theme-dark .ntn-title-text {
+	border-bottom-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Hover-reveal OPEN button — absolutely anchored so it can never
+   squeeze the column or float loose in reading mode. */
+.ntn-open-btn {
+	display: none;
+	position: absolute;
+	right: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	flex-shrink: 0;
+	font-size: 11px;
+	font-weight: 500;
+	letter-spacing: 0.5px;
+	color: var(--ntn-text-muted);
+	background: var(--background-primary);
+	border: 1px solid var(--ntn-border);
+	border-radius: 4px;
+	padding: 1px 6px;
+	cursor: pointer;
+	box-shadow: rgba(15, 15, 15, 0.1) 0 1px 2px;
+}
+
+.ntn-row:hover .ntn-col-title .ntn-open-btn {
+	display: inline-flex;
+	align-items: center;
+}
+
+.ntn-open-btn:hover {
+	background: var(--ntn-hover);
+}
+
+/* ---------------- Tag pills ---------------- */
+
+.ntn-pills {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 6px;
+	overflow: hidden;
+}
+
+.ntn-wrap .ntn-pills {
+	flex-wrap: wrap;
+}
+
+.ntn-pill {
+	display: inline-flex;
+	align-items: center;
+	height: 20px;
+	max-width: 100%;
+	padding: 0 6px;
+	border-radius: 3px;
+	font-size: 14px;
+	line-height: 120%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	background: var(--ntn-pill-bg-light, #e3e2e0);
+	color: var(--ntn-pill-fg-light, #32302c);
+}
+
+.theme-dark .ntn-pill {
+	background: var(--ntn-pill-bg-dark, rgba(90, 90, 90, 0.25));
+	color: var(--ntn-pill-fg-dark, #d4d4d4);
+}
+
+/* ---------------- Group rows ---------------- */
+
+.ntn-group-row td {
+	padding: 14px 8px 6px;
+	border-bottom: 1px solid var(--ntn-border);
+}
+
+.ntn-group-count {
+	margin-left: 8px;
+	color: var(--ntn-text-muted);
+	font-size: 12px;
+}
+
+/* ---------------- "+ New" footer ---------------- */
+
+.ntn-new-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 33px;
+	padding: 0 8px;
+	color: var(--ntn-text-muted);
+	cursor: pointer;
+	border-bottom: 1px solid var(--ntn-border);
+	user-select: none;
+	transition: background 20ms ease-in;
+}
+
+.ntn-new-row:hover {
+	background: var(--ntn-hover);
+}
+
+.ntn-new-plus {
+	font-size: 16px;
+	line-height: 1;
+}
+
+/* Keep Obsidian's native value widgets visually quiet inside cells */
+.ntn-cell {
+	color: var(--ntn-text);
+}
+
+.ntn-cell .metadata-input-longtext {
+	font-size: 14px;
+}
+
+/* ---------------- Inline editing ---------------- */
+
+.ntn-editable {
+	cursor: text;
+}
+
+.ntn-editable:hover {
+	box-shadow: inset 0 0 0 1px var(--ntn-border);
+}
+
+.ntn-input {
+	width: 100%;
+	border: none;
+	outline: none;
+	background: var(--background-primary);
+	box-shadow: rgba(15, 15, 15, 0.05) 0 0 0 1px,
+		rgba(15, 15, 15, 0.1) 0 3px 6px,
+		rgba(15, 15, 15, 0.2) 0 9px 24px;
+	border-radius: 4px;
+	padding: 4px 8px;
+	font-family: inherit;
+	font-size: 14px;
+	color: var(--ntn-text);
+}
+
+/* ---------------- Select editor (floating menu) ---------------- */
+
+.ntn-select-menu {
+	position: fixed;
+	z-index: var(--layer-menu, 30);
+	background: var(--background-primary);
+	border-radius: 8px;
+	box-shadow: rgba(15, 15, 15, 0.05) 0 0 0 1px,
+		rgba(15, 15, 15, 0.1) 0 3px 6px,
+		rgba(15, 15, 15, 0.2) 0 9px 24px;
+	max-width: 320px;
+	padding: 0;
+	overflow: hidden;
+}
+
+.ntn-select-current {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 10px;
+	background: var(--ntn-hover);
+	border-bottom: 1px solid var(--ntn-border);
+	cursor: text;
+}
+
+.ntn-select-pills {
+	display: contents;
+}
+
+.ntn-select-current .ntn-pill {
+	gap: 4px;
+}
+
+.ntn-pill-remove {
+	cursor: pointer;
+	font-size: 10px;
+	opacity: 0.5;
+	margin-left: 2px;
+}
+
+.ntn-pill-remove:hover {
+	opacity: 1;
+}
+
+.ntn-select-input {
+	flex: 1;
+	min-width: 60px;
+	border: none;
+	outline: none;
+	background: transparent;
+	font-family: inherit;
+	font-size: 14px;
+	color: var(--ntn-text);
+	padding: 2px 0;
+}
+
+.ntn-select-hint {
+	padding: 6px 10px 2px;
+	font-size: 12px;
+	color: var(--ntn-text-muted);
+	user-select: none;
+}
+
+.ntn-select-options {
+	max-height: 240px;
+	overflow-y: auto;
+	padding: 4px;
+}
+
+.ntn-select-option {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 5px 6px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background 20ms ease-in;
+}
+
+.ntn-select-option:hover {
+	background: var(--ntn-hover);
+}
+
+.ntn-select-check {
+	margin-left: auto;
+	color: var(--ntn-text-muted);
+	font-size: 12px;
+}
+
+.ntn-select-create {
+	color: var(--ntn-text-muted);
+	font-size: 13px;
+}
+
+.ntn-select-empty {
+	padding: 6px;
+	color: var(--ntn-text-muted);
+	font-size: 13px;
+}
+
+.ntn-checkbox {
+	appearance: auto;
+	width: 16px;
+	height: 16px;
+	margin: 0;
+	accent-color: rgb(35, 131, 226); /* Notion blue */
+	cursor: pointer;
+}
+
+.ntn-checkbox:disabled {
+	cursor: default;
+	opacity: 0.6;
+}
