@@ -1,15 +1,21 @@
 {
-  "name": "notion-bases",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "good-bases",
+  "version": "0.3.0",
+  "description": "A Bases table view styled to match Notion databases: hover UI, OPEN buttons, and colored tag pills.",
+  "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
-    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "version": "node version-bump.mjs && git add manifest.json versions.json"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "bases",
+    "notion"
+  ],
+  "author": "UmbertoFrancesco",
+  "license": "MIT",
   "devDependencies": {
     "builtin-modules": "^5.2.0",
     "esbuild": "^0.28.0",

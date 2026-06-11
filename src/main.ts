@@ -39,11 +39,11 @@ function colorFor(text: string): typeof NOTION_COLORS[number] {
 export default class NotionBasesPlugin extends Plugin {
 	async onload() {
 		if (typeof this.registerBasesView !== 'function') {
-			new Notice('Notion Bases: requires Obsidian 1.10.0+ (registerBasesView API missing).', 8000);
+			new Notice('GoodBases: requires Obsidian 1.10.0+ (registerBasesView API missing).', 8000);
 			return;
 		}
 		const ok = this.registerBasesView(NOTION_TABLE_VIEW, {
-			name: 'Notion table',
+			name: 'Notion-style table',
 			icon: 'lucide-table-2',
 			factory: (controller, containerEl) =>
 				new NotionTableView(controller, containerEl),
@@ -73,7 +73,7 @@ export default class NotionBasesPlugin extends Plugin {
 			],
 		});
 		if (!ok) {
-			new Notice('Notion Bases: view registration failed. Is the Bases core plugin enabled?', 8000);
+			new Notice('GoodBases: view registration failed. Is the Bases core plugin enabled?', 8000);
 		}
 	}
 }
@@ -89,11 +89,18 @@ export class NotionTableView extends BasesView {
 	private pinnedColors: Map<string, typeof NOTION_COLORS[number]> = new Map();
 	/** Tears down the floating select menu, if one is open. */
 	private menuCleanup: (() => void) | null = null;
+	/** The open select menu's element, for outside-click detection. */
+	private menuEl: HTMLElement | null = null;
 
 	constructor(controller: QueryController, parentEl: HTMLElement) {
 		super(controller);
 		this.rootEl = parentEl.createDiv({ cls: 'ntn-root' });
 		this.register(() => this.closeSelectMenu());
+		this.registerDomEvent(document, 'mousedown', (evt) => {
+			if (this.menuEl && !this.menuEl.contains(evt.target as Node)) {
+				this.closeSelectMenu();
+			}
+		}, { capture: true });
 	}
 
 	onDataUpdated(): void {
@@ -346,7 +353,7 @@ export class NotionTableView extends BasesView {
 			});
 			// Bases reacts to the metadata change and calls onDataUpdated for us.
 		} catch (e) {
-			console.error('[notion-bases] failed to write property', propName, e);
+			console.error('[good-bases] failed to write property', propName, e);
 			new Notice(`Couldn't update "${propName}".`);
 			this.onDataUpdated();
 		}
@@ -518,12 +525,9 @@ export class NotionTableView extends BasesView {
 			}
 		});
 
-		const onDocDown = (evt: MouseEvent) => {
-			if (!menu.contains(evt.target as Node)) this.closeSelectMenu();
-		};
-		document.addEventListener('mousedown', onDocDown, true);
+		this.menuEl = menu;
 		this.menuCleanup = () => {
-			document.removeEventListener('mousedown', onDocDown, true);
+			this.menuEl = null;
 			menu.remove();
 		};
 

@@ -1,9 +1,9 @@
 {
-	"id": "notion-bases",
-	"name": "Notion Bases",
+	"id": "good-bases",
+	"name": "GoodBases",
 	"version": "0.3.0",
 	"minAppVersion": "1.10.2",
 	"description": "A Bases table view styled to match Notion databases: hover UI, OPEN buttons, and colored tag pills.",
-	"author": "you",
+	"author": "UmbertoFrancesco",
 	"isDesktopOnly": false
 }

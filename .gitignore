@@ -1,1 +1,11 @@
 /CLAUDE.md
+
+# build output (ships as a release asset, not in git)
+main.js
+
+# dependencies
+node_modules/
+
+# OS / editor
+.DS_Store
+.claude/
