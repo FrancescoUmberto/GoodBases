@@ -17,7 +17,6 @@
   "author": "UmbertoFrancesco",
   "license": "MIT",
   "devDependencies": {
-    "builtin-modules": "^5.2.0",
     "esbuild": "^0.28.0",
     "obsidian": "^1.13.1",
     "typescript": "^6.0.3"
