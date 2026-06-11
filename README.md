@@ -7,9 +7,6 @@ value pills, and inline cell editing.
 
 > Requires Obsidian **1.10.2+** with the **Bases** core plugin enabled.
 
-<!-- TODO: add screenshot -->
-<!-- ![GoodBases table view](docs/screenshot.png) -->
-
 ## Features
 
 - **Notion-style table** — system font stack, hairline borders, hover

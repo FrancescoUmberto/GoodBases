@@ -9,8 +9,8 @@
 	--ntn-border: rgb(233, 233, 231);
 	--ntn-hover: rgba(55, 53, 47, 0.04);
 	--ntn-active: rgba(55, 53, 47, 0.08);
-	font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont,
-		"Segoe UI", Helvetica, Arial, sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+		Arial, sans-serif;
 	font-size: 14px;
 	color: var(--ntn-text);
 	overflow-x: auto;
@@ -58,6 +58,7 @@
 	   headers on one line so columns size to their natural width. */
 	white-space: nowrap !important;
 	word-break: normal !important;
+	-webkit-user-select: none;
 	user-select: none;
 }
 
@@ -253,6 +254,7 @@
 	color: var(--ntn-text-muted);
 	cursor: pointer;
 	border-bottom: 1px solid var(--ntn-border);
+	-webkit-user-select: none;
 	user-select: none;
 	transition: background 20ms ease-in;
 }
@@ -326,8 +328,18 @@
 	cursor: text;
 }
 
+/* Sits as a flex item inside .ntn-select-current; wraps its own pills
+   and collapses entirely when the cell has no values. */
 .ntn-select-pills {
-	display: contents;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+
+.ntn-select-pills:empty {
+	display: none;
 }
 
 .ntn-select-current .ntn-pill {
@@ -361,6 +373,7 @@
 	padding: 6px 10px 2px;
 	font-size: 12px;
 	color: var(--ntn-text-muted);
+	-webkit-user-select: none;
 	user-select: none;
 }
 

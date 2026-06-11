@@ -96,7 +96,9 @@ export class NotionTableView extends BasesView {
 		super(controller);
 		this.rootEl = parentEl.createDiv({ cls: 'ntn-root' });
 		this.register(() => this.closeSelectMenu());
-		this.registerDomEvent(document, 'mousedown', (evt) => {
+		// rootEl.doc resolves to the view's own document, so this also works
+		// when the view lives in a popout window (plain `document` would not).
+		this.registerDomEvent(this.rootEl.doc, 'mousedown', (evt) => {
 			if (this.menuEl && !this.menuEl.contains(evt.target as Node)) {
 				this.closeSelectMenu();
 			}
@@ -344,7 +346,7 @@ export class NotionTableView extends BasesView {
 
 	private async writeProperty(entry: BasesEntry, propName: string, value: unknown): Promise<void> {
 		try {
-			await this.app.fileManager.processFrontMatter(entry.file, (fm) => {
+			await this.app.fileManager.processFrontMatter(entry.file, (fm: Record<string, unknown>) => {
 				if (value === null) {
 					delete fm[propName];
 				} else {
@@ -413,7 +415,7 @@ export class NotionTableView extends BasesView {
 			s.replace(/^#/, ''),
 		);
 
-		const menu = document.body.createDiv({ cls: 'ntn-root ntn-select-menu' });
+		const menu = this.rootEl.doc.body.createDiv({ cls: 'ntn-root ntn-select-menu' });
 		const rect = td.getBoundingClientRect();
 		menu.style.left = `${rect.left}px`;
 		menu.style.top = `${rect.bottom + 4}px`;
@@ -535,13 +537,14 @@ export class NotionTableView extends BasesView {
 		renderOptions();
 		input.focus();
 
-		// Keep the menu on screen.
+		// Keep the menu on screen (in the view's own window, popouts included).
+		const win = this.rootEl.win;
 		const mRect = menu.getBoundingClientRect();
-		if (mRect.bottom > window.innerHeight - 8) {
+		if (mRect.bottom > win.innerHeight - 8) {
 			menu.style.top = `${Math.max(8, rect.top - mRect.height - 4)}px`;
 		}
-		if (mRect.right > window.innerWidth - 8) {
-			menu.style.left = `${Math.max(8, window.innerWidth - mRect.width - 8)}px`;
+		if (mRect.right > win.innerWidth - 8) {
+			menu.style.left = `${Math.max(8, win.innerWidth - mRect.width - 8)}px`;
 		}
 	}
 
