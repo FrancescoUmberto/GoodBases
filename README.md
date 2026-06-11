@@ -5,7 +5,13 @@ A custom [Bases](https://help.obsidian.md/bases) view for
 Notion-style table: clean chrome, hover-reveal OPEN buttons, colored
 value pills, and inline cell editing.
 
+![GoodBases — Notion-style table view](docs/asset/intro.png)
+
 > Requires Obsidian **1.10.2+** with the **Bases** core plugin enabled.
+
+## Demo
+
+![Inline editing and pill select menu in action](docs/asset/demo.gif)
 
 ## Features
 
@@ -58,7 +64,7 @@ Once accepted: **Settings → Community plugins → Browse**, search for
 3. Reload Obsidian and enable the plugin in **Settings → Community
    plugins**.
 
-## Development
+<!-- ## Development
 
 ```bash
 npm install
@@ -68,7 +74,7 @@ npm run build  # type-check + production bundle → main.js
 
 Point the repo (or a symlink) at
 `VaultRoot/.obsidian/plugins/good-bases/` and reload the plugin in
-Obsidian after each build.
+Obsidian after each build. -->
 
 ## Disclaimer
 
