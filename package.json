@@ -1,6 +1,6 @@
 {
   "name": "good-bases",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A Bases table view styled to match Notion databases: hover UI, OPEN buttons, and colored tag pills.",
   "main": "main.js",
   "scripts": {
