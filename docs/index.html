@@ -153,7 +153,12 @@
 	.card p { margin: 0; font-size: 14px; color: var(--text-muted); }
 
 	/* ---------- install ---------- */
-	ol.steps { padding-left: 22px; margin: 18px 0 0; }
+	#install .prereq { margin: 16px 0 0; color: var(--text-muted); }
+	#install h3 {
+		display: flex; align-items: center; gap: 10px;
+		font-size: 18px; font-weight: 600; margin: 32px 0 4px;
+	}
+	ol.steps { padding-left: 22px; margin: 10px 0 0; }
 	ol.steps li { margin-bottom: 10px; }
 	code {
 		font-family: "SFMono-Regular", Menlo, Consolas, monospace;
@@ -265,9 +270,24 @@
 
 	<section id="install">
 		<h2>Install</h2>
+		<p class="prereq">Requires Obsidian <strong>1.10.2+</strong> with the
+			<strong>Bases</strong> core plugin enabled.</p>
+
+		<h3><span class="pill blue">1</span> From Obsidian's Community plugins</h3>
 		<ol class="steps">
-			<li>Make sure you're on Obsidian <strong>1.10.2+</strong> with the
-				<strong>Bases</strong> core plugin enabled.</li>
+			<li>Open <strong>Settings → Community plugins → Browse</strong>.</li>
+			<li>Search for <strong>GoodBases</strong>, then click
+				<strong>Install</strong> and <strong>Enable</strong>.</li>
+			<li>In any Base, open the view selector and pick
+				<strong>Notion-style table</strong>.</li>
+		</ol>
+		<div class="note">
+			Community plugin submission is in progress — until it's accepted,
+			use the manual install below.
+		</div>
+
+		<h3><span class="pill green">2</span> Manual install from the repository</h3>
+		<ol class="steps">
 			<li>Download <code>main.js</code>, <code>manifest.json</code>, and
 				<code>styles.css</code> from the
 				<a href="https://github.com/FrancescoUmberto/GoodBases/releases/latest">latest release</a>.</li>
@@ -277,11 +297,6 @@
 			<li>In any Base, open the view selector and pick
 				<strong>Notion-style table</strong>.</li>
 		</ol>
-		<div class="note">
-			Community plugin submission is in progress — once accepted, you'll
-			be able to install GoodBases directly from Obsidian's plugin
-			browser.
-		</div>
 	</section>
 
 	<section id="support">
