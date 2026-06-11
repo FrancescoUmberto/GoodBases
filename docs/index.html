@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoodBases — Notion-style tables for Obsidian Bases</title>
+<meta name="description" content="A free, open-source Obsidian plugin that renders your Bases as Notion-style tables: colored pills, inline editing, hover actions.">
+<meta property="og:title" content="GoodBases — Notion-style tables for Obsidian Bases">
+<meta property="og:description" content="A free, open-source Obsidian plugin that renders your Bases as Notion-style tables: colored pills, inline editing, hover actions.">
+<meta property="og:image" content="https://francescoumberto.github.io/GoodBases/asset/intro.png">
+<meta property="og:url" content="https://francescoumberto.github.io/GoodBases/">
+<meta property="og:type" content="website">
+<style>
+	:root {
+		--text: rgb(55, 53, 47);
+		--text-muted: rgba(55, 53, 47, 0.65);
+		--border: rgb(233, 233, 231);
+		--hover: rgba(55, 53, 47, 0.04);
+		--bg: #ffffff;
+		--bg-card: #ffffff;
+		--code-bg: rgba(135, 131, 120, 0.15);
+		--shadow: rgba(15, 15, 15, 0.05) 0 0 0 1px,
+			rgba(15, 15, 15, 0.1) 0 3px 6px,
+			rgba(15, 15, 15, 0.2) 0 9px 24px;
+		--pill-gray-bg: #e3e2e0;   --pill-gray-fg: #32302c;
+		--pill-blue-bg: #d3e5ef;   --pill-blue-fg: #183347;
+		--pill-green-bg: #dbeddb;  --pill-green-fg: #1c3829;
+		--pill-yellow-bg: #fdecc8; --pill-yellow-fg: #402c1b;
+		--pill-purple-bg: #e8deee; --pill-purple-fg: #412454;
+		--pill-pink-bg: #f5e0e9;   --pill-pink-fg: #4c2337;
+		--pill-orange-bg: #fadec9; --pill-orange-fg: #49290e;
+		--bmc-yellow: #ffdd00;
+	}
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--text: rgba(255, 255, 255, 0.81);
+			--text-muted: rgba(255, 255, 255, 0.443);
+			--border: rgb(47, 47, 47);
+			--hover: rgba(255, 255, 255, 0.055);
+			--bg: #191919;
+			--bg-card: #202020;
+			--code-bg: rgba(135, 131, 120, 0.25);
+			--pill-gray-bg: #5a5a5a40;  --pill-gray-fg: #d4d4d4;
+			--pill-blue-bg: #28456c;    --pill-blue-fg: #cadffa;
+			--pill-green-bg: #2b593f55; --pill-green-fg: #c9e7d1;
+			--pill-yellow-bg: #6a531e55;--pill-yellow-fg: #f2e1b8;
+			--pill-purple-bg: #492f6455;--pill-purple-fg: #e0d3ee;
+			--pill-pink-bg: #69314c55;  --pill-pink-fg: #f1d5e3;
+			--pill-orange-bg: #654a2455;--pill-orange-fg: #f0ddc9;
+		}
+	}
+	* { box-sizing: border-box; }
+	body {
+		margin: 0;
+		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+			Arial, sans-serif;
+		font-size: 16px;
+		line-height: 1.6;
+		color: var(--text);
+		background: var(--bg);
+		-webkit-font-smoothing: antialiased;
+	}
+	a { color: inherit; }
+	main { max-width: 900px; margin: 0 auto; padding: 0 24px 80px; }
+
+	/* ---------- header ---------- */
+	header {
+		position: sticky; top: 0; z-index: 10;
+		background: var(--bg);
+		border-bottom: 1px solid var(--border);
+	}
+	.nav {
+		max-width: 900px; margin: 0 auto; padding: 10px 24px;
+		display: flex; align-items: center; gap: 18px;
+	}
+	.nav .brand { font-weight: 600; text-decoration: none; margin-right: auto; }
+	.nav a:not(.brand):not(.bmc) {
+		text-decoration: none; color: var(--text-muted); font-size: 14px;
+		padding: 4px 8px; border-radius: 4px;
+	}
+	.nav a:not(.brand):not(.bmc):hover { background: var(--hover); color: var(--text); }
+
+	/* ---------- buttons ---------- */
+	.btn {
+		display: inline-flex; align-items: center; gap: 8px;
+		padding: 8px 16px; border-radius: 6px; font-size: 15px;
+		font-weight: 500; text-decoration: none; cursor: pointer;
+		border: 1px solid var(--border);
+		transition: background 60ms ease-in;
+	}
+	.btn:hover { background: var(--hover); }
+	.btn.primary {
+		background: rgb(35, 131, 226); border-color: rgb(35, 131, 226);
+		color: #fff;
+	}
+	.btn.primary:hover { background: rgb(28, 113, 196); }
+	.bmc {
+		display: inline-flex; align-items: center; gap: 8px;
+		background: var(--bmc-yellow); color: #0d0c22;
+		font-weight: 600; text-decoration: none;
+		padding: 8px 16px; border-radius: 6px; font-size: 15px;
+		border: 1px solid rgba(0, 0, 0, 0.08);
+	}
+	.bmc:hover { filter: brightness(0.96); }
+	.bmc.small { padding: 5px 12px; font-size: 13px; }
+
+	/* ---------- hero ---------- */
+	.hero { padding: 72px 0 36px; text-align: center; }
+	.hero h1 {
+		font-size: 44px; line-height: 1.15; letter-spacing: -0.01em;
+		font-weight: 700; margin: 0 0 14px;
+	}
+	.hero p.tagline {
+		font-size: 19px; color: var(--text-muted); margin: 0 auto 28px;
+		max-width: 620px;
+	}
+	.hero .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+	.shot {
+		display: block; width: 100%; border-radius: 8px;
+		border: 1px solid var(--border); box-shadow: var(--shadow);
+		margin: 48px 0 0;
+	}
+
+	/* ---------- pills ---------- */
+	.pill {
+		display: inline-flex; align-items: center; height: 22px;
+		padding: 0 8px; border-radius: 3px; font-size: 13px;
+		font-weight: 500; white-space: nowrap;
+	}
+	.gray   { background: var(--pill-gray-bg);   color: var(--pill-gray-fg); }
+	.blue   { background: var(--pill-blue-bg);   color: var(--pill-blue-fg); }
+	.green  { background: var(--pill-green-bg);  color: var(--pill-green-fg); }
+	.yellow { background: var(--pill-yellow-bg); color: var(--pill-yellow-fg); }
+	.purple { background: var(--pill-purple-bg); color: var(--pill-purple-fg); }
+	.pink   { background: var(--pill-pink-bg);   color: var(--pill-pink-fg); }
+	.orange { background: var(--pill-orange-bg); color: var(--pill-orange-fg); }
+
+	/* ---------- sections ---------- */
+	section { padding-top: 64px; }
+	h2 {
+		font-size: 26px; font-weight: 700; margin: 0 0 6px;
+		padding-bottom: 8px; border-bottom: 1px solid var(--border);
+	}
+	.features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 22px; }
+	@media (max-width: 640px) { .features { grid-template-columns: 1fr; } }
+	.card {
+		border: 1px solid var(--border); border-radius: 8px;
+		padding: 16px 18px; background: var(--bg-card);
+		transition: background 60ms ease-in;
+	}
+	.card:hover { background: var(--hover); }
+	.card h3 { margin: 10px 0 6px; font-size: 16px; font-weight: 600; }
+	.card p { margin: 0; font-size: 14px; color: var(--text-muted); }
+
+	/* ---------- install ---------- */
+	ol.steps { padding-left: 22px; margin: 18px 0 0; }
+	ol.steps li { margin-bottom: 10px; }
+	code {
+		font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+		font-size: 85%; background: var(--code-bg);
+		padding: 2px 5px; border-radius: 3px; color: #eb5757;
+	}
+	.note {
+		margin-top: 18px; padding: 12px 16px; border-radius: 6px;
+		background: var(--hover); border: 1px solid var(--border);
+		font-size: 14px; color: var(--text-muted);
+	}
+
+	/* ---------- support ---------- */
+	.support {
+		margin-top: 24px; text-align: center;
+		border: 1px solid var(--border); border-radius: 8px;
+		padding: 36px 24px;
+	}
+	.support p { max-width: 540px; margin: 0 auto 22px; color: var(--text-muted); }
+
+	footer {
+		border-top: 1px solid var(--border);
+		margin-top: 80px; padding: 28px 24px 48px;
+		font-size: 13px; color: var(--text-muted); text-align: center;
+	}
+	footer a { color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<header>
+	<nav class="nav">
+		<a class="brand" href="#">🗂️ GoodBases</a>
+		<a href="#features">Features</a>
+		<a href="#demo">Demo</a>
+		<a href="#install">Install</a>
+		<a href="https://github.com/FrancescoUmberto/GoodBases">GitHub</a>
+		<a class="bmc small" href="https://buymeacoffee.com/umbertofrancesco">☕ Support</a>
+	</nav>
+</header>
+
+<main>
+	<div class="hero">
+		<h1>Notion-style tables<br>for Obsidian Bases</h1>
+		<p class="tagline">
+			GoodBases is a free, open-source plugin that renders your
+			Obsidian Bases as Notion-style databases — clean chrome, colored
+			pills, hover actions, and inline editing. Your notes stay yours;
+			only the look changes.
+		</p>
+		<div class="cta">
+			<a class="btn primary" href="#install">Install</a>
+			<a class="btn" href="https://github.com/FrancescoUmberto/GoodBases">View on GitHub</a>
+			<a class="bmc" href="https://buymeacoffee.com/umbertofrancesco">☕ Buy me a coffee</a>
+		</div>
+		<img class="shot" src="asset/intro.png" alt="GoodBases rendering an Obsidian Base as a Notion-style table">
+	</div>
+
+	<section id="features">
+		<h2>Features</h2>
+		<div class="features">
+			<div class="card">
+				<span class="pill blue">Table</span>
+				<h3>Notion-fidelity chrome</h3>
+				<p>System font stack, hairline borders, row hover wash, and a
+				horizontal scroll container so columns never crush — even in
+				embeds and reading mode.</p>
+			</div>
+			<div class="card">
+				<span class="pill green">Pills</span>
+				<h3>Colored value pills</h3>
+				<p>Tags and list properties render with Notion's 9-color select
+				palette. A deterministic hash keeps each value's color stable
+				forever — or pin your own per value.</p>
+			</div>
+			<div class="card">
+				<span class="pill yellow">Editing</span>
+				<h3>Inline cell editing</h3>
+				<p>Click a cell to edit text and numbers in a floating input;
+				checkboxes toggle in place. Pill cells open a select menu with
+				every known value, search, and create-on-Enter.</p>
+			</div>
+			<div class="card">
+				<span class="pill purple">OPEN</span>
+				<h3>Hover-reveal OPEN button</h3>
+				<p>Hover a row to reveal an OPEN button that jumps to the note,
+				just like Notion's database rows.</p>
+			</div>
+			<div class="card">
+				<span class="pill pink">Groups</span>
+				<h3>Grouping support</h3>
+				<p>Respects the Bases <em>group by</em> configuration, with
+				Notion-style group headers and counts.</p>
+			</div>
+			<div class="card">
+				<span class="pill orange">Options</span>
+				<h3>View options</h3>
+				<p>Wrap cell content, toggle vertical lines, force properties to
+				render as pills, and pin pill colors — all from the view's
+				settings menu.</p>
+			</div>
+		</div>
+	</section>
+
+	<section id="demo">
+		<h2>Demo</h2>
+		<img class="shot" src="asset/demo.gif" alt="Inline editing and the pill select menu in action">
+	</section>
+
+	<section id="install">
+		<h2>Install</h2>
+		<ol class="steps">
+			<li>Make sure you're on Obsidian <strong>1.10.2+</strong> with the
+				<strong>Bases</strong> core plugin enabled.</li>
+			<li>Download <code>main.js</code>, <code>manifest.json</code>, and
+				<code>styles.css</code> from the
+				<a href="https://github.com/FrancescoUmberto/GoodBases/releases/latest">latest release</a>.</li>
+			<li>Put them in <code>VaultRoot/.obsidian/plugins/good-bases/</code>.</li>
+			<li>Reload Obsidian and enable <strong>GoodBases</strong> in
+				<strong>Settings → Community plugins</strong>.</li>
+			<li>In any Base, open the view selector and pick
+				<strong>Notion-style table</strong>.</li>
+		</ol>
+		<div class="note">
+			Community plugin submission is in progress — once accepted, you'll
+			be able to install GoodBases directly from Obsidian's plugin
+			browser.
+		</div>
+	</section>
+
+	<section id="support">
+		<h2>Support</h2>
+		<div class="support">
+			<p>
+				GoodBases is built and maintained in my spare time, and it will
+				always be free. If it makes your vault a little nicer to work
+				in, a coffee goes toward new features — column resizing,
+				calculated footers, editable tags — and keeping up with
+				Obsidian's API changes.
+			</p>
+			<a class="bmc" href="https://buymeacoffee.com/umbertofrancesco">☕ Buy me a coffee</a>
+		</div>
+	</section>
+</main>
+
+<footer>
+	<a href="https://github.com/FrancescoUmberto/GoodBases/blob/main/LICENSE">MIT License</a>
+	· <a href="https://github.com/FrancescoUmberto/GoodBases">GitHub</a>
+	· <a href="https://buymeacoffee.com/umbertofrancesco">Buy me a coffee</a>
+	<br><br>
+	This plugin is not affiliated with, endorsed by, or sponsored by Notion
+	Labs, Inc. "Notion" is a trademark of Notion Labs, Inc.; it is used here
+	only to describe the visual style the view emulates.
+</footer>
+
+</body>
+</html>
