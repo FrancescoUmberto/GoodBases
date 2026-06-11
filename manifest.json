@@ -5,5 +5,6 @@
 	"minAppVersion": "1.10.2",
 	"description": "A Bases table view styled to match Notion databases: hover UI, OPEN buttons, and colored tag pills.",
 	"author": "UmbertoFrancesco",
+	"fundingUrl": "https://buymeacoffee.com/umbertofrancesco",
 	"isDesktopOnly": false
 }

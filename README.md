@@ -7,6 +7,8 @@ value pills, and inline cell editing.
 
 ![GoodBases — Notion-style table view](docs/asset/intro.png)
 
+![Tag selection](docs/asset/zoom.png)
+
 > Requires Obsidian **1.10.2+** with the **Bases** core plugin enabled.
 
 ## Demo
@@ -75,6 +77,13 @@ npm run build  # type-check + production bundle → main.js
 Point the repo (or a symlink) at
 `VaultRoot/.obsidian/plugins/good-bases/` and reload the plugin in
 Obsidian after each build. -->
+
+## Support
+
+GoodBases is free and open source, built and maintained in my spare
+time. If it makes your vault a little nicer to work in, you can
+[buy me a coffee](https://buymeacoffee.com/umbertofrancesco) ☕ — it
+goes toward new features and keeping up with Obsidian's API changes.
 
 ## Disclaimer
 
