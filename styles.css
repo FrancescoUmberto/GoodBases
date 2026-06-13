@@ -221,13 +221,13 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	background: var(--ntn-pill-bg-light, #e3e2e0);
-	color: var(--ntn-pill-fg-light, #32302c);
+	background: var(--ntn-pill-bg-light, #EBECED);
+	color: var(--ntn-pill-fg-light, #9B9A97);
 }
 
 .theme-dark .ntn-pill {
-	background: var(--ntn-pill-bg-dark, rgba(90, 90, 90, 0.25));
-	color: var(--ntn-pill-fg-dark, #d4d4d4);
+	background: var(--ntn-pill-bg-dark, #454B4E);
+	color: var(--ntn-pill-fg-dark, rgba(151,154,155,0.95));
 }
 
 /* ---------------- Group rows ---------------- */
@@ -422,13 +422,13 @@
 	height: 16px;
 	border-radius: 4px;
 	cursor: pointer;
-	background: var(--ntn-pill-bg-light, #e3e2e0);
+	background: var(--ntn-pill-bg-light, #EBECED);
 	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 	transition: box-shadow 20ms ease-in;
 }
 
 .theme-dark .ntn-select-color-btn {
-	background: var(--ntn-pill-bg-dark, rgba(90, 90, 90, 0.25));
+	background: var(--ntn-pill-bg-dark, #454B4E);
 	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
@@ -477,12 +477,12 @@
 	width: 16px;
 	height: 16px;
 	border-radius: 4px;
-	background: var(--ntn-pill-bg-light, #e3e2e0);
+	background: var(--ntn-pill-bg-light, #EBECED);
 	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 .theme-dark .ntn-color-swatch {
-	background: var(--ntn-pill-bg-dark, rgba(90, 90, 90, 0.25));
+	background: var(--ntn-pill-bg-dark, #454B4E);
 	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
