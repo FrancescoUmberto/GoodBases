@@ -499,3 +499,75 @@
 	cursor: default;
 	opacity: 0.6;
 }
+
+/* ============================================================
+   Bases toolbar restyle (Obsidian core UI, NOT our .ntn view)
+   These target the Bases core toolbar globally — the plugin's
+   styles.css is injected document-wide, so they affect every
+   base's toolbar, not just the Notion-style view. !important
+   is required to outrank core button styles. Notion blue is a
+   deliberate accent constant.
+   ============================================================ */
+
+/* "New" → Notion-style blue split button (label + chevron divider). */
+.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button {
+	background-color: #357ee6 !important; /* Notion blue */
+	border-radius: 6px !important;
+	padding: 0 !important;
+	border: none !important;
+	display: inline-flex !important;
+	align-items: stretch !important; /* vertical divider spans full height */
+	overflow: hidden !important; /* clip corners to keep the rounding */
+	cursor: pointer;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+	transition: background-color 0.2s;
+}
+
+/* Hide the original "+" icon. */
+.bases-toolbar-item.bases-toolbar-new-item-menu .text-button-icon {
+	display: none !important;
+}
+
+/* "New" label + the divider line before the chevron. */
+.bases-toolbar-item.bases-toolbar-new-item-menu .text-button-label {
+	color: white !important;
+	font-weight: 600 !important;
+	font-size: 14px !important;
+	padding: 6px 12px !important;
+	display: flex;
+	align-items: center;
+	border-right: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Chevron-down drawn as an inline SVG in the button's ::after. */
+.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button::after {
+	content: "";
+	display: block;
+	width: 28px;
+	background-color: transparent;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 16px;
+}
+
+.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button:hover {
+	background-color: #2769c9 !important; /* darker on hover */
+}
+
+/* Drop the text on Sort / Filter / Properties / Search — icons only. */
+.bases-toolbar-sort-menu .text-button-label,
+.bases-toolbar-filter-menu .text-button-label,
+.bases-toolbar-properties-menu .text-button-label,
+.bases-toolbar-search .text-button-label {
+	display: none !important;
+}
+
+/* Make those icon-only buttons square. */
+.bases-toolbar-sort-menu .text-icon-button,
+.bases-toolbar-filter-menu .text-icon-button,
+.bases-toolbar-properties-menu .text-icon-button,
+.bases-toolbar-search .text-icon-button {
+	padding: 6px !important;
+	justify-content: center;
+}
