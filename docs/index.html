@@ -316,10 +316,24 @@
 		<h2>Changelog</h2>
 		<div class="changelog">
 
+			<details class="release" open>
+				<summary>
+					<span class="ver">0.4.2</span>
+					<span class="tag">Latest</span>
+				</summary>
+				<div class="body">
+					<ul>
+						<li>The optional Notion-style toolbar snippet no longer uses the
+							<code>:has()</code> selector, avoiding the performance cost of
+							broad selector invalidation. Once enabled, the snippet now
+							restyles every Bases toolbar (not just GoodBases views).</li>
+					</ul>
+				</div>
+			</details>
+
 			<details class="release">
 				<summary>
 					<span class="ver">0.4.1</span>
-					<span class="tag">Latest</span>
 				</summary>
 				<div class="body">
 					<ul>
