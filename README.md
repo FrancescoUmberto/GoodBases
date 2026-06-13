@@ -110,6 +110,14 @@ goes toward new features and keeping up with Obsidian's API changes.
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
 
+### 0.4.1
+
+- **Changed:** the Notion-style toolbar restyle (blue "New" button +
+  icon-only Sort / Filter / Properties / Search) is now an **optional CSS
+  snippet** (`snippets/goodbases-notion-toolbar.css`) rather than shipping
+  in the plugin, so GoodBases no longer restyles Obsidian's core UI. See
+  [Installation → Optional: Notion-style toolbar](#optional-notion-style-toolbar).
+
 ### 0.4.0
 
 **🎨 New — per-value color picker.** Click the colored square next to any
