@@ -11,6 +11,7 @@
  * view drives lifetime — outside-click and unload both call {@link close}.
  */
 import { BasesEntry, BasesPropertyId } from 'obsidian';
+import { NOTION_COLORS, applyColorVars } from '../lib/colors';
 import { valueToStrings } from '../lib/values';
 
 export interface SelectEditorDeps {
@@ -32,12 +33,16 @@ export interface SelectEditorDeps {
 	applyColor: (pill: HTMLElement, text: string) => void;
 	/** Persist the chosen value (`null` deletes the property). */
 	write: (value: unknown) => void;
+	/** Pin a value to a specific Notion color name (e.g. `"green"`). */
+	setColor: (value: string, colorName: string) => void;
 	/** Invoked once when the menu closes, so the owner can drop its reference. */
 	onClose: () => void;
 }
 
 export class SelectEditor {
 	private readonly menu: HTMLElement;
+	/** Open color-picker flyout, if any (a sibling popover on the body). */
+	private colorMenu: HTMLElement | null = null;
 	private closed = false;
 
 	/** Currently selected values (display form, leading `#` stripped). */
@@ -69,17 +74,24 @@ export class SelectEditor {
 		this.position();
 	}
 
-	/** Whether the given node lives inside the menu (outside-click detection). */
+	/** Whether the given node lives inside the menu or its color flyout. */
 	contains(node: Node | null): boolean {
-		return !!node && this.menu.contains(node);
+		if (!node) return false;
+		return this.menu.contains(node) || (this.colorMenu?.contains(node) ?? false);
 	}
 
 	/** Tear the menu down. Idempotent; notifies the owner via `onClose`. */
 	close(): void {
 		if (this.closed) return;
 		this.closed = true;
+		this.closeColorMenu();
 		this.menu.remove();
 		this.deps.onClose();
+	}
+
+	private closeColorMenu(): void {
+		this.colorMenu?.remove();
+		this.colorMenu = null;
 	}
 
 	private build(): HTMLElement {
@@ -154,6 +166,7 @@ export class SelectEditor {
 	}
 
 	private renderOptions(): void {
+		this.closeColorMenu();
 		this.optionsEl.empty();
 		const q = this.input.value.trim();
 		const ql = q.toLowerCase();
@@ -162,6 +175,17 @@ export class SelectEditor {
 			.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 		for (const o of visible) {
 			const row = this.optionsEl.createDiv({ cls: 'ntn-select-option' });
+			// A colored square (left of the label) showing the value's current
+			// color; click to change it.
+			const colorBtn = row.createSpan({
+				cls: 'ntn-select-color-btn',
+				attr: { 'aria-label': 'Change color' },
+			});
+			this.deps.applyColor(colorBtn, o);
+			colorBtn.addEventListener('click', (evt) => {
+				evt.stopPropagation();
+				this.openColorMenu(colorBtn, o);
+			});
 			const pill = row.createSpan({ cls: 'ntn-pill' });
 			this.deps.applyColor(pill, o);
 			pill.setText(o);
@@ -206,20 +230,49 @@ export class SelectEditor {
 		}
 	}
 
-	/** Anchor below the cell, then clamp into the view's own window. */
-	private position(): void {
-		const { anchor, win } = this.deps;
-		const rect = anchor.getBoundingClientRect();
-		this.menu.style.left = `${rect.left}px`;
-		this.menu.style.top = `${rect.bottom + 4}px`;
-		this.menu.style.minWidth = `${Math.max(rect.width, 220)}px`;
+	/** Open the color picker for a value, anchored to its row button. */
+	private openColorMenu(anchorEl: HTMLElement, value: string): void {
+		this.closeColorMenu();
+		const menu = this.deps.doc.body.createDiv({ cls: 'ntn-root ntn-color-menu' });
+		this.colorMenu = menu;
 
-		const mRect = this.menu.getBoundingClientRect();
-		if (mRect.bottom > win.innerHeight - 8) {
-			this.menu.style.top = `${Math.max(8, rect.top - mRect.height - 4)}px`;
+		for (const c of NOTION_COLORS) {
+			const item = menu.createDiv({ cls: 'ntn-color-option' });
+			const swatch = item.createSpan({ cls: 'ntn-color-swatch' });
+			applyColorVars(swatch, c);
+			item.createSpan({ cls: 'ntn-color-name', text: c.name });
+			item.addEventListener('click', (evt) => {
+				evt.stopPropagation();
+				this.deps.setColor(value, c.name);
+				// Live map is updated synchronously, so re-rendering shows the
+				// new color immediately (renderOptions also closes this flyout).
+				this.renderPills();
+				this.renderOptions();
+			});
 		}
-		if (mRect.right > win.innerWidth - 8) {
-			this.menu.style.left = `${Math.max(8, win.innerWidth - mRect.width - 8)}px`;
+
+		this.clampToWindow(menu, anchorEl.getBoundingClientRect());
+	}
+
+	/** Anchor the main menu below the cell, then clamp into the window. */
+	private position(): void {
+		const rect = this.deps.anchor.getBoundingClientRect();
+		this.menu.style.minWidth = `${Math.max(rect.width, 220)}px`;
+		this.clampToWindow(this.menu, rect);
+	}
+
+	/** Place a popover just below `anchorRect`, nudged to stay on screen. */
+	private clampToWindow(el: HTMLElement, anchorRect: DOMRect): void {
+		const { win } = this.deps;
+		el.style.left = `${anchorRect.left}px`;
+		el.style.top = `${anchorRect.bottom + 4}px`;
+
+		const rect = el.getBoundingClientRect();
+		if (rect.bottom > win.innerHeight - 8) {
+			el.style.top = `${Math.max(8, anchorRect.top - rect.height - 4)}px`;
+		}
+		if (rect.right > win.innerWidth - 8) {
+			el.style.left = `${Math.max(8, win.innerWidth - rect.width - 8)}px`;
 		}
 	}
 }

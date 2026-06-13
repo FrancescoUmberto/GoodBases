@@ -10,8 +10,8 @@ export function buildViewOptions(_config: BasesViewConfig): BasesAllOptions[] {
 		{
 			type: 'toggle',
 			key: 'wrapCells',
-			displayName: 'Wrap cell content',
-			default: false,
+			displayName: 'Wrap all content',
+			default: true,
 		},
 		{
 			type: 'toggle',

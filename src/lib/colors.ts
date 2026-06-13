@@ -59,11 +59,15 @@ export function resolvePillColor(text: string, pinned: PinnedColors): NotionColo
 	return pinned.get(key) ?? colorFor(key);
 }
 
-/** Apply a resolved pill color to an element via its per-pill CSS variables. */
+/** Set the per-pill CSS variables on an element from an exact palette color. */
+export function applyColorVars(el: HTMLElement, c: NotionColor): void {
+	el.style.setProperty('--ntn-pill-bg-light', c.lightBg);
+	el.style.setProperty('--ntn-pill-fg-light', c.lightFg);
+	el.style.setProperty('--ntn-pill-bg-dark', c.darkBg);
+	el.style.setProperty('--ntn-pill-fg-dark', c.darkFg);
+}
+
+/** Apply a resolved pill color (pinned override ?? hash) to an element. */
 export function applyPillColor(pill: HTMLElement, text: string, pinned: PinnedColors): void {
-	const c = resolvePillColor(text, pinned);
-	pill.style.setProperty('--ntn-pill-bg-light', c.lightBg);
-	pill.style.setProperty('--ntn-pill-fg-light', c.lightFg);
-	pill.style.setProperty('--ntn-pill-bg-dark', c.darkBg);
-	pill.style.setProperty('--ntn-pill-fg-dark', c.darkFg);
+	applyColorVars(pill, resolvePillColor(text, pinned));
 }

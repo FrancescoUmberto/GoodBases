@@ -13,7 +13,7 @@ import {
 	QueryController,
 } from 'obsidian';
 import { LOG_PREFIX, NOTION_TABLE_VIEW } from '../constants';
-import { PinnedColors, applyPillColor } from '../lib/colors';
+import { PinnedColors, applyPillColor, colorByName } from '../lib/colors';
 import { PillDetection, computePillProps, parsePinnedColors } from '../lib/pills';
 import { valueToStrings } from '../lib/values';
 import { SelectEditor } from './select-editor';
@@ -47,7 +47,8 @@ export class NotionTableView extends BasesView {
 		const root = this.rootEl;
 		root.empty();
 
-		root.toggleClass('ntn-wrap', this.config.get('wrapCells') === true);
+		// Default-on: only an explicit `false` turns wrapping off (mirrors verticalLines).
+		root.toggleClass('ntn-wrap', this.config.get('wrapCells') !== false);
 		root.toggleClass('ntn-vlines', this.config.get('verticalLines') !== false);
 
 		const props = this.config.getOrder();
@@ -258,8 +259,32 @@ export class NotionTableView extends BasesView {
 			isList: this.pills.listProps.has(prop),
 			applyColor: (pill, text) => this.applyPillColor(pill, text),
 			write: (value) => void this.writeProperty(entry, propName, value),
+			setColor: (value, colorName) => this.setPinnedColor(value, colorName),
 			onClose: () => { this.selectEditor = null; },
 		});
+	}
+
+	/**
+	 * Pin a value to a specific Notion color. Updates the live map for instant
+	 * feedback in the open editor, then persists into the `pinnedColors` view
+	 * option (replacing any prior entry for the same value) so it survives
+	 * reloads and is editable from the view settings too.
+	 */
+	private setPinnedColor(value: string, colorName: string): void {
+		const color = colorByName(colorName);
+		if (!color) return;
+		const bare = value.replace(/^#/, '');
+		const key = bare.toLowerCase();
+		this.pinnedColors.set(key, color);
+
+		const raw = this.config.get('pinnedColors');
+		const list = Array.isArray(raw) ? raw.map((s) => String(s)) : [];
+		const kept = list.filter((item) => {
+			const m = item.match(/^(.+?)\s*[=:]\s*(.+)$/);
+			return m ? m[1].trim().replace(/^#/, '').toLowerCase() !== key : true;
+		});
+		kept.push(`${bare}=${colorName}`);
+		this.config.set('pinnedColors', kept);
 	}
 
 	private closeSelectMenu(): void {
