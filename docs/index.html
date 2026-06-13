@@ -176,6 +176,38 @@
 		font-size: 14px; color: var(--text-muted);
 	}
 
+	/* ---------- changelog ---------- */
+	.changelog { margin-top: 22px; }
+	.release {
+		border: 1px solid var(--border); border-radius: 8px;
+		margin-bottom: 12px; background: var(--bg-card); overflow: hidden;
+	}
+	.release > summary {
+		list-style: none; cursor: pointer;
+		display: flex; align-items: baseline; gap: 12px;
+		padding: 14px 18px; font-weight: 600;
+		transition: background 60ms ease-in;
+	}
+	.release > summary::-webkit-details-marker { display: none; }
+	.release > summary:hover { background: var(--hover); }
+	.release > summary::after {
+		content: "\25B8"; margin-left: auto; color: var(--text-muted);
+		font-weight: 400; transition: transform 120ms ease;
+	}
+	.release[open] > summary::after { transform: rotate(90deg); }
+	.release .ver { font-size: 17px; }
+	.release .tag {
+		font-size: 12px; font-weight: 600; color: #fff;
+		background: rgb(35, 131, 226); border-radius: 4px; padding: 1px 8px;
+	}
+	.release .date { font-size: 13px; color: var(--text-muted); font-weight: 400; }
+	.release .body { padding: 4px 18px 18px; }
+	.release .body .headline { font-size: 15px; color: var(--text); margin: 0 0 14px; }
+	.release .body p { margin: 0 0 10px; font-size: 14px; color: var(--text-muted); }
+	.release .body ul { margin: 0; padding-left: 20px; }
+	.release .body li { font-size: 14px; color: var(--text-muted); margin-bottom: 6px; }
+	.release .body img.shot { margin: 0 0 16px; }
+
 	/* ---------- support ---------- */
 	.support {
 		margin-top: 24px; text-align: center;
@@ -199,6 +231,7 @@
 		<a class="brand" href="#">🗂️ GoodBases</a>
 		<a href="#features">Features</a>
 		<a href="#demo">Demo</a>
+		<a href="#changelog">Changelog</a>
 		<a href="#install">Install</a>
 		<a href="https://github.com/FrancescoUmberto/GoodBases">GitHub</a>
 		<a class="bmc small" href="https://buymeacoffee.com/umbertofrancesco">☕ Support</a>
@@ -235,9 +268,10 @@
 			<div class="card">
 				<span class="pill green">Pills</span>
 				<h3>Colored value pills</h3>
-				<p>Tags and list properties render with Notion's 9-color select
+				<p>Tags and list properties render with Notion's 9-color
 				palette. A deterministic hash keeps each value's color stable
-				forever — or pin your own per value.</p>
+				forever — or recolor any value yourself with the built-in
+				color picker.</p>
 			</div>
 			<div class="card">
 				<span class="pill yellow">Editing</span>
@@ -276,6 +310,63 @@
 		<p class="caption">The pill select editor up close — current values as
 			removable pills, search or create on Enter, and every value already
 			used for the property, each with its own stable color.</p>
+	</section>
+
+	<section id="changelog">
+		<h2>Changelog</h2>
+		<div class="changelog">
+
+			<details class="release" open>
+				<summary>
+					<span class="ver">0.4.0</span>
+					<span class="tag">Latest</span>
+				</summary>
+				<div class="body">
+					<p class="headline">🎨 <strong>New — per-value color picker.</strong>
+						Click the colored square next to any value in the pill
+						select menu and pick a color from Notion's palette. Your
+						choice is saved and applies everywhere that value appears.</p>
+					<img class="shot" src="asset/color_picker.gif" alt="Picking a pill color from the select menu">
+					<img class="shot" src="asset/button.png" alt="The restyled Bases toolbar with a Notion-like blue New button">
+					<p>Also in this release:</p>
+					<ul>
+						<li>Cell content now wraps by default.</li>
+						<li>Colored pills use Notion's exact light- and dark-mode
+							palette values.</li>
+						<li>Restyled the Bases toolbar for the Notion-style view — a
+							Notion-like blue “New” button and icon-only Sort / Filter /
+							Properties / Search, scoped so it only affects this
+							plugin's views.</li>
+						<li>Fixed: the inline edit box no longer lingers after you
+							click away from a cell without changing it.</li>
+					</ul>
+					
+				</div>
+			</details>
+
+			<details class="release">
+				<summary><span class="ver">0.3.2</span></summary>
+				<div class="body">
+					<ul>
+						<li>Added the project landing page, demo GIF, and a Buy Me a
+							Coffee funding link.</li>
+					</ul>
+				</div>
+			</details>
+
+			<details class="release">
+				<summary><span class="ver">0.3.1</span></summary>
+				<div class="body">
+					<ul>
+						<li>Initial release: Notion-style table view — colored pills,
+							inline cell editing, the pill select editor, pinned pill
+							colors, hover-reveal OPEN button, grouping support, and view
+							options.</li>
+					</ul>
+				</div>
+			</details>
+
+		</div>
 	</section>
 
 	<section id="install">

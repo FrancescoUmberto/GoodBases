@@ -23,17 +23,22 @@ value pills, and inline cell editing.
 - **OPEN button** — hover a row to reveal a button that opens the note,
   just like Notion's database rows.
 - **Colored pills** — list properties (tags, multitext) render as pills
-  using Notion's 9-color select palette. Colors are assigned by a
-  deterministic hash, so a value keeps its color forever.
-- **Pinned colors** — override the hash per value with the
-  *Pinned pill colors* view option (`value=color`, e.g. `Done=green`).
+  using Notion's 9-color palette (accurate light- and dark-mode values).
+  Colors are assigned by a deterministic hash, so a value keeps its color
+  forever — unless you choose your own.
+- **Per-value color picker** — click the colored square next to any value
+  in the pill select menu and pick a color from Notion's palette. Your
+  choice is saved and applies everywhere that value appears. (You can also
+  set colors in bulk with the *Pinned pill colors* view option —
+  `value=color`, e.g. `Done=green`.)
 - **Inline editing** — click a cell to edit text and numbers in a
   floating input; checkboxes toggle in place. Pill cells open a
   select-style menu listing every value already used for that property,
   with search and create-on-Enter.
 - **Grouping support** — respects the Bases `group by` configuration.
-- **View options** — wrap cell content, toggle vertical lines, force
-  specific properties to render as pills.
+- **View options** — wrap cell content (on by default), toggle vertical
+  lines, force specific properties to render as pills, and pin pill
+  colors.
 
 ## Usage
 
@@ -84,6 +89,45 @@ GoodBases is free and open source, built and maintained in my spare
 time. If it makes your vault a little nicer to work in, you can
 [buy me a coffee](https://buymeacoffee.com/umbertofrancesco) ☕ — it
 goes toward new features and keeping up with Obsidian's API changes.
+
+## Changelog
+
+The full history and downloadable builds are on the
+[Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
+
+### 0.4.0
+
+**🎨 New — per-value color picker.** Click the colored square next to any
+value in the pill select menu and pick a color from Notion's palette. Your
+choice is saved (persisted to the *Pinned pill colors* option) and applies
+everywhere that value appears.
+
+![Picking a pill color from the select menu](docs/asset/color_picker.gif)
+
+![The restyled Bases toolbar with a Notion-like blue "New" button](docs/asset/button.png)
+
+Also in this release:
+
+- **Changed:** cell content now wraps by default.
+- **Changed:** colored pills use Notion's exact light- and dark-mode
+  palette values.
+- **Changed:** restyled the Bases toolbar for the Notion-style view — a
+  Notion-like blue "New" button and icon-only Sort / Filter / Properties /
+  Search, scoped so it only affects this plugin's views.
+- **Fixed:** the inline edit box no longer lingers after you click away
+  from a cell without changing it.
+
+
+### 0.3.2
+
+- **Added:** the project landing page, demo GIF, and a Buy Me a Coffee
+  funding link.
+
+### 0.3.1
+
+- **Initial release:** Notion-style table view — colored pills, inline
+  cell editing, the pill select editor, pinned pill colors, hover-reveal
+  OPEN button, grouping support, and view options.
 
 ## Disclaimer
 
