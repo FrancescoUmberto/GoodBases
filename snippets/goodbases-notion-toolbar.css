@@ -1,0 +1,91 @@
+/* ============================================================
+   GoodBases — optional "Notion-style toolbar" snippet
+   ============================================================
+
+   This restyles Obsidian's CORE Bases toolbar (the New / Sort / Filter /
+   Properties / Search row) to match the Notion look: a blue split "New"
+   button and icon-only controls.
+
+   It is shipped as an OPTIONAL CSS snippet rather than inside the plugin
+   because the toolbar lives in the Bases core, outside the plugin's own
+   view DOM — styling it from the plugin would mean restyling core UI for
+   every base in the vault. As a snippet you opt in explicitly.
+
+   To enable:
+     1. Copy this file to  <vault>/.obsidian/snippets/
+     2. Settings → Appearance → CSS snippets → toggle
+        "goodbases-notion-toolbar" on.
+
+   The rules are scoped with `:has(.ntn-root)` so they only affect a Bases
+   leaf currently showing a GoodBases view; other bases keep their native
+   toolbar. (`:has` is fine here — snippets aren't subject to the plugin
+   review's lint, and the invalidation scope is limited to bases leaves.)
+   ============================================================ */
+
+/* "New" → Notion-style blue split button (label + chevron divider). */
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+	.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button {
+	background-color: #357ee6 !important; /* Notion blue */
+	border-radius: 6px !important;
+	padding: 0 !important;
+	border: none !important;
+	display: inline-flex !important;
+	align-items: stretch !important; /* vertical divider spans full height */
+	overflow: hidden !important; /* clip corners to keep the rounding */
+	cursor: pointer;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+	transition: background-color 0.2s;
+}
+
+/* Hide the original "+" icon. */
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+	.bases-toolbar-item.bases-toolbar-new-item-menu .text-button-icon {
+	display: none !important;
+}
+
+/* "New" label + the divider line before the chevron. */
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+	.bases-toolbar-item.bases-toolbar-new-item-menu .text-button-label {
+	color: white !important;
+	font-weight: 600 !important;
+	font-size: 14px !important;
+	padding: 6px 12px !important;
+	display: flex;
+	align-items: center;
+	border-right: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Chevron-down drawn as an inline SVG in the button's ::after. */
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+	.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button::after {
+	content: "";
+	display: block;
+	width: 28px;
+	background-color: transparent;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 16px;
+}
+
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+	.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button:hover {
+	background-color: #2769c9 !important; /* darker on hover */
+}
+
+/* Drop the text on Sort / Filter / Properties / Search — icons only. */
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-sort-menu .text-button-label,
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-filter-menu .text-button-label,
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-properties-menu .text-button-label,
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-search .text-button-label {
+	display: none !important;
+}
+
+/* Make those icon-only buttons square. */
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-sort-menu .text-icon-button,
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-filter-menu .text-icon-button,
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-properties-menu .text-icon-button,
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-search .text-icon-button {
+	padding: 6px !important;
+	justify-content: center;
+}

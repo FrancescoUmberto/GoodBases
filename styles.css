@@ -500,84 +500,9 @@
 	opacity: 0.6;
 }
 
-/* ============================================================
-   Bases toolbar restyle (Obsidian core UI, NOT our .ntn view)
-
-   The toolbar lives in the Bases core, OUTSIDE our view's DOM, and
-   the plugin's styles.css is injected document-wide. To avoid
-   restyling every base in the vault, each rule is scoped to a bases
-   leaf that currently shows one of OUR views — detected with
-   `:has(.ntn-root)`, since every plugin view wraps its content in
-   `.ntn-root`. Any future view inherits this for free. When a core
-   or third-party view is active, `:has()` fails to match and the
-   toolbar keeps its native look. !important is required to outrank
-   core button styles; the blue is a deliberate Notion accent.
-   ============================================================ */
-
-/* "New" → Notion-style blue split button (label + chevron divider). */
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
-	.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button {
-	background-color: #357ee6 !important; /* Notion blue */
-	border-radius: 6px !important;
-	padding: 0 !important;
-	border: none !important;
-	display: inline-flex !important;
-	align-items: stretch !important; /* vertical divider spans full height */
-	overflow: hidden !important; /* clip corners to keep the rounding */
-	cursor: pointer;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
-	transition: background-color 0.2s;
-}
-
-/* Hide the original "+" icon. */
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
-	.bases-toolbar-item.bases-toolbar-new-item-menu .text-button-icon {
-	display: none !important;
-}
-
-/* "New" label + the divider line before the chevron. */
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
-	.bases-toolbar-item.bases-toolbar-new-item-menu .text-button-label {
-	color: white !important;
-	font-weight: 600 !important;
-	font-size: 14px !important;
-	padding: 6px 12px !important;
-	display: flex;
-	align-items: center;
-	border-right: 1px solid rgba(0, 0, 0, 0.15) !important;
-}
-
-/* Chevron-down drawn as an inline SVG in the button's ::after. */
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
-	.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button::after {
-	content: "";
-	display: block;
-	width: 28px;
-	background-color: transparent;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: 16px;
-}
-
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
-	.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button:hover {
-	background-color: #2769c9 !important; /* darker on hover */
-}
-
-/* Drop the text on Sort / Filter / Properties / Search — icons only. */
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-sort-menu .text-button-label,
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-filter-menu .text-button-label,
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-properties-menu .text-button-label,
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-search .text-button-label {
-	display: none !important;
-}
-
-/* Make those icon-only buttons square. */
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-sort-menu .text-icon-button,
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-filter-menu .text-icon-button,
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-properties-menu .text-icon-button,
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-search .text-icon-button {
-	padding: 6px !important;
-	justify-content: center;
-}
+/* The Notion-style Bases-toolbar restyle (blue "New" split button +
+   icon-only controls) lives in an OPTIONAL CSS snippet, not here:
+   snippets/goodbases-notion-toolbar.css. It targets Obsidian core UI
+   outside this plugin's view, so it ships as opt-in rather than being
+   injected document-wide. See the README ("Optional: Notion-style
+   toolbar"). */

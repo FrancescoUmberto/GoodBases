@@ -71,6 +71,21 @@ Once accepted: **Settings → Community plugins → Browse**, search for
 3. Reload Obsidian and enable the plugin in **Settings → Community
    plugins**.
 
+### Optional: Notion-style toolbar
+
+The blue Notion-style **New** button and icon-only Sort / Filter /
+Properties / Search are an **optional CSS snippet** (the toolbar is core
+Obsidian UI, outside the plugin's view, so it isn't styled by the plugin
+itself):
+
+1. Copy
+   [`snippets/goodbases-notion-toolbar.css`](snippets/goodbases-notion-toolbar.css)
+   into `VaultRoot/.obsidian/snippets/`.
+2. Enable it under **Settings → Appearance → CSS snippets**.
+
+The snippet only affects a Base's toolbar while a GoodBases view is open;
+every other base keeps its native toolbar.
+
 <!-- ## Development
 
 ```bash
