@@ -16,14 +16,15 @@
      2. Settings → Appearance → CSS snippets → toggle
         "goodbases-notion-toolbar" on.
 
-   The rules are scoped with `:has(.ntn-root)` so they only affect a Bases
-   leaf currently showing a GoodBases view; other bases keep their native
-   toolbar. (`:has` is fine here — snippets aren't subject to the plugin
-   review's lint, and the invalidation scope is limited to bases leaves.)
+   The rules are scoped to `.workspace-leaf-content[data-type="bases"]`, so
+   they affect every Bases leaf's toolbar once the snippet is enabled. (An
+   earlier version narrowed this to GoodBases views only via `:has(.ntn-root)`,
+   but `:has` triggers broad selector invalidation; since this is an opt-in
+   snippet you turn on deliberately, restyling all bases toolbars is fine.)
    ============================================================ */
 
 /* "New" → Notion-style blue split button (label + chevron divider). */
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+.workspace-leaf-content[data-type="bases"]
 	.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button {
 	background-color: #357ee6 !important; /* Notion blue */
 	border-radius: 6px !important;
@@ -38,13 +39,13 @@
 }
 
 /* Hide the original "+" icon. */
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+.workspace-leaf-content[data-type="bases"]
 	.bases-toolbar-item.bases-toolbar-new-item-menu .text-button-icon {
 	display: none !important;
 }
 
 /* "New" label + the divider line before the chevron. */
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+.workspace-leaf-content[data-type="bases"]
 	.bases-toolbar-item.bases-toolbar-new-item-menu .text-button-label {
 	color: white !important;
 	font-weight: 600 !important;
@@ -56,7 +57,7 @@
 }
 
 /* Chevron-down drawn as an inline SVG in the button's ::after. */
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+.workspace-leaf-content[data-type="bases"]
 	.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button::after {
 	content: "";
 	display: block;
@@ -68,24 +69,24 @@
 	background-size: 16px;
 }
 
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+.workspace-leaf-content[data-type="bases"]
 	.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button:hover {
 	background-color: #2769c9 !important; /* darker on hover */
 }
 
 /* Drop the text on Sort / Filter / Properties / Search — icons only. */
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-sort-menu .text-button-label,
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-filter-menu .text-button-label,
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-properties-menu .text-button-label,
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-search .text-button-label {
+.workspace-leaf-content[data-type="bases"] .bases-toolbar-sort-menu .text-button-label,
+.workspace-leaf-content[data-type="bases"] .bases-toolbar-filter-menu .text-button-label,
+.workspace-leaf-content[data-type="bases"] .bases-toolbar-properties-menu .text-button-label,
+.workspace-leaf-content[data-type="bases"] .bases-toolbar-search .text-button-label {
 	display: none !important;
 }
 
 /* Make those icon-only buttons square. */
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-sort-menu .text-icon-button,
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-filter-menu .text-icon-button,
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-properties-menu .text-icon-button,
-.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-search .text-icon-button {
+.workspace-leaf-content[data-type="bases"] .bases-toolbar-sort-menu .text-icon-button,
+.workspace-leaf-content[data-type="bases"] .bases-toolbar-filter-menu .text-icon-button,
+.workspace-leaf-content[data-type="bases"] .bases-toolbar-properties-menu .text-icon-button,
+.workspace-leaf-content[data-type="bases"] .bases-toolbar-search .text-icon-button {
 	padding: 6px !important;
 	justify-content: center;
 }
