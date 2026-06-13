@@ -502,15 +502,21 @@
 
 /* ============================================================
    Bases toolbar restyle (Obsidian core UI, NOT our .ntn view)
-   These target the Bases core toolbar globally — the plugin's
-   styles.css is injected document-wide, so they affect every
-   base's toolbar, not just the Notion-style view. !important
-   is required to outrank core button styles. Notion blue is a
-   deliberate accent constant.
+
+   The toolbar lives in the Bases core, OUTSIDE our view's DOM, and
+   the plugin's styles.css is injected document-wide. To avoid
+   restyling every base in the vault, each rule is scoped to a bases
+   leaf that currently shows one of OUR views — detected with
+   `:has(.ntn-root)`, since every plugin view wraps its content in
+   `.ntn-root`. Any future view inherits this for free. When a core
+   or third-party view is active, `:has()` fails to match and the
+   toolbar keeps its native look. !important is required to outrank
+   core button styles; the blue is a deliberate Notion accent.
    ============================================================ */
 
 /* "New" → Notion-style blue split button (label + chevron divider). */
-.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button {
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+	.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button {
 	background-color: #357ee6 !important; /* Notion blue */
 	border-radius: 6px !important;
 	padding: 0 !important;
@@ -524,12 +530,14 @@
 }
 
 /* Hide the original "+" icon. */
-.bases-toolbar-item.bases-toolbar-new-item-menu .text-button-icon {
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+	.bases-toolbar-item.bases-toolbar-new-item-menu .text-button-icon {
 	display: none !important;
 }
 
 /* "New" label + the divider line before the chevron. */
-.bases-toolbar-item.bases-toolbar-new-item-menu .text-button-label {
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+	.bases-toolbar-item.bases-toolbar-new-item-menu .text-button-label {
 	color: white !important;
 	font-weight: 600 !important;
 	font-size: 14px !important;
@@ -540,7 +548,8 @@
 }
 
 /* Chevron-down drawn as an inline SVG in the button's ::after. */
-.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button::after {
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+	.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button::after {
 	content: "";
 	display: block;
 	width: 28px;
@@ -551,23 +560,24 @@
 	background-size: 16px;
 }
 
-.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button:hover {
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root)
+	.bases-toolbar-item.bases-toolbar-new-item-menu .text-icon-button:hover {
 	background-color: #2769c9 !important; /* darker on hover */
 }
 
 /* Drop the text on Sort / Filter / Properties / Search — icons only. */
-.bases-toolbar-sort-menu .text-button-label,
-.bases-toolbar-filter-menu .text-button-label,
-.bases-toolbar-properties-menu .text-button-label,
-.bases-toolbar-search .text-button-label {
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-sort-menu .text-button-label,
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-filter-menu .text-button-label,
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-properties-menu .text-button-label,
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-search .text-button-label {
 	display: none !important;
 }
 
 /* Make those icon-only buttons square. */
-.bases-toolbar-sort-menu .text-icon-button,
-.bases-toolbar-filter-menu .text-icon-button,
-.bases-toolbar-properties-menu .text-icon-button,
-.bases-toolbar-search .text-icon-button {
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-sort-menu .text-icon-button,
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-filter-menu .text-icon-button,
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-properties-menu .text-icon-button,
+.workspace-leaf-content[data-type="bases"]:has(.ntn-root) .bases-toolbar-search .text-icon-button {
 	padding: 6px !important;
 	justify-content: center;
 }
