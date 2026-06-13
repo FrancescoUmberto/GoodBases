@@ -9,3 +9,6 @@ node_modules/
 # OS / editor
 .DS_Store
 .claude/
+
+# local env (per-machine vault path for build deploy); .env.example is tracked
+.env
