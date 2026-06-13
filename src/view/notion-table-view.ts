@@ -198,6 +198,12 @@ export class NotionTableView extends BasesView {
 			if (committed) return;
 			committed = true;
 			const raw = input.value.trim();
+			// Unchanged value: no write fires, so Bases won't re-render — discard
+			// the input ourselves, otherwise the edit box lingers in the cell.
+			if (raw === current) {
+				this.onDataUpdated();
+				return;
+			}
 			let out: unknown = raw;
 			if (kind === 'number') {
 				const n = Number(raw);
