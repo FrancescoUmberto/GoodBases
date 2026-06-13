@@ -414,6 +414,78 @@
 	font-size: 13px;
 }
 
+/* Per-option color square (left of the label) — shows the value's current
+   color; click to change. */
+.ntn-select-color-btn {
+	flex: 0 0 auto;
+	width: 16px;
+	height: 16px;
+	border-radius: 4px;
+	cursor: pointer;
+	background: var(--ntn-pill-bg-light, #e3e2e0);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+	transition: box-shadow 20ms ease-in;
+}
+
+.theme-dark .ntn-select-color-btn {
+	background: var(--ntn-pill-bg-dark, rgba(90, 90, 90, 0.25));
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.ntn-select-color-btn:hover {
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18), 0 0 0 2px var(--ntn-hover);
+}
+
+.theme-dark .ntn-select-color-btn:hover {
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 0 0 2px var(--ntn-hover);
+}
+
+/* Color picker flyout (sibling popover anchored to the color button). */
+.ntn-color-menu {
+	position: fixed;
+	z-index: var(--layer-menu, 30);
+	background: var(--background-primary);
+	border-radius: 8px;
+	box-shadow: rgba(15, 15, 15, 0.05) 0 0 0 1px,
+		rgba(15, 15, 15, 0.1) 0 3px 6px,
+		rgba(15, 15, 15, 0.2) 0 9px 24px;
+	padding: 4px;
+	min-width: 150px;
+	max-height: 280px;
+	overflow-y: auto;
+}
+
+.ntn-color-option {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 5px 6px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 13px;
+	color: var(--ntn-text);
+	text-transform: capitalize;
+	transition: background 20ms ease-in;
+}
+
+.ntn-color-option:hover {
+	background: var(--ntn-hover);
+}
+
+.ntn-color-swatch {
+	flex: 0 0 auto;
+	width: 16px;
+	height: 16px;
+	border-radius: 4px;
+	background: var(--ntn-pill-bg-light, #e3e2e0);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.theme-dark .ntn-color-swatch {
+	background: var(--ntn-pill-bg-dark, rgba(90, 90, 90, 0.25));
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
 .ntn-checkbox {
 	appearance: auto;
 	width: 16px;
