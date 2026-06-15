@@ -37,9 +37,14 @@ export class NotionTableView extends BasesView {
 		// One persistent capture-phase listener that no-ops unless a menu is open
 		// — do not revert to a per-menu `document.addEventListener`.
 		this.registerDomEvent(this.rootEl.doc, 'mousedown', (evt) => {
-			if (this.selectEditor && !this.selectEditor.contains(evt.target as Node)) {
-				this.closeSelectMenu();
-			}
+			if (!this.selectEditor) return;
+			const target = evt.target as Node;
+			if (this.selectEditor.contains(target)) return;
+			// A click on the anchoring cell is left to that cell's own click
+			// handler, which toggles the menu shut (see openSelectEditor).
+			// Closing here too would let the click re-open it instead.
+			if (this.selectEditor.anchorEl.contains(target)) return;
+			this.closeSelectMenu();
 		}, { capture: true });
 	}
 
@@ -144,6 +149,9 @@ export class NotionTableView extends BasesView {
 				td.addEventListener('click', () =>
 					this.openSelectEditor(td, entry, prop, propName),
 				);
+				// Keep an open menu pointed at this re-rendered cell so
+				// click-to-toggle keeps working after a write re-renders the table.
+				this.selectEditor?.reanchorIfMatches(td, entry.file.path, prop);
 			}
 			return;
 		}
@@ -187,8 +195,13 @@ export class NotionTableView extends BasesView {
 		kind: 'text' | 'number',
 	): void {
 		if (td.querySelector('input.ntn-input')) return; // already editing
+		// Size the input to the cell as it currently renders, rather than a
+		// fixed size — measure before emptying (which would collapse the cell).
+		const rect = td.getBoundingClientRect();
 		td.empty();
 		const input = td.createEl('input', { type: 'text', cls: 'ntn-input' });
+		input.style.width = `${rect.width}px`;
+		input.style.height = `${rect.height}px`;
 		input.value = current;
 		input.focus();
 		input.select();
@@ -254,6 +267,11 @@ export class NotionTableView extends BasesView {
 		prop: BasesPropertyId,
 		propName: string,
 	): void {
+		// Clicking the cell whose menu is already open toggles it shut.
+		if (this.selectEditor?.anchorEl === td) {
+			this.closeSelectMenu();
+			return;
+		}
 		this.closeSelectMenu();
 		this.selectEditor = new SelectEditor({
 			doc: this.rootEl.doc,

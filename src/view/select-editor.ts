@@ -80,6 +80,24 @@ export class SelectEditor {
 		return this.menu.contains(node) || (this.colorMenu?.contains(node) ?? false);
 	}
 
+	/** The cell element this menu is anchored to (drives click-to-toggle). */
+	get anchorEl(): HTMLElement {
+		return this.deps.anchor;
+	}
+
+	/**
+	 * Re-point the menu at a freshly rendered cell for the same file +
+	 * property. `onDataUpdated` replaces every `td`, so without this the
+	 * anchor would dangle on a detached node and click-to-toggle (which
+	 * compares against the live cell) would miss. Returns whether it matched.
+	 */
+	reanchorIfMatches(td: HTMLElement, filePath: string, prop: BasesPropertyId): boolean {
+		if (this.closed) return false;
+		if (this.deps.prop !== prop || this.deps.entry.file.path !== filePath) return false;
+		this.deps.anchor = td;
+		return true;
+	}
+
 	/** Tear the menu down. Idempotent; notifies the owner via `onClose`. */
 	close(): void {
 		if (this.closed) return;

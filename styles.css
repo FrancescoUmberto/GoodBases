@@ -288,7 +288,10 @@
 }
 
 .ntn-input {
-	width: 100%;
+	/* width/height are set inline to the clicked cell's measured size;
+	   border-box makes that size include the padding below so the input
+	   matches the cell footprint exactly. */
+	box-sizing: border-box;
 	border: none;
 	outline: none;
 	background: var(--background-primary);
@@ -296,7 +299,7 @@
 		rgba(15, 15, 15, 0.1) 0 3px 6px,
 		rgba(15, 15, 15, 0.2) 0 9px 24px;
 	border-radius: 4px;
-	padding: 4px 8px;
+	padding: 6px 8px;
 	font-family: inherit;
 	font-size: 14px;
 	color: var(--ntn-text);
