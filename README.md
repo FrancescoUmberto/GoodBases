@@ -131,6 +131,27 @@ want to nudge one up the list?
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
 
+### 0.4.4
+
+- **Fixed:** long, multi-line text cells now edit in a textarea, so the
+  full wrapped text stays visible while you type — previously a
+  single-line input scrolled the text sideways. Shift+Enter inserts a
+  newline; Enter saves.
+
+### 0.4.3
+
+- **Fixed:** clicking a pill cell again now closes its tag selector
+  (previously only an outside click or Esc would).
+- **Fixed:** the inline text/number edit box now matches the size of the
+  cell you click, instead of a fixed size.
+
+### 0.4.2
+
+- **Changed:** the optional Notion-style toolbar snippet no longer uses
+  the `:has()` selector, avoiding the performance cost of broad selector
+  invalidation. Once enabled, the snippet now restyles every Bases
+  toolbar (not just GoodBases views).
+
 ### 0.4.1
 
 - **Changed:** the Notion-style toolbar restyle (blue "New" button +
