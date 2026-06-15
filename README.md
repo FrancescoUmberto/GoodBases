@@ -61,7 +61,7 @@ Notes on editing:
 ### From the community plugin browser
 
 Once accepted: **Settings → Community plugins → Browse**, search for
-"GoodBases", install, and enable.
+[GoodBases](https://community.obsidian.md/plugins/good-bases), install, and enable. Then, open the view selector and pick **Notion-style table**.
 
 ### Manual
 
