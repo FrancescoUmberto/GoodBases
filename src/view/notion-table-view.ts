@@ -194,12 +194,18 @@ export class NotionTableView extends BasesView {
 		current: string,
 		kind: 'text' | 'number',
 	): void {
-		if (td.querySelector('input.ntn-input')) return; // already editing
-		// Size the input to the cell as it currently renders, rather than a
+		if (td.querySelector('.ntn-input')) return; // already editing
+		// Size the editor to the cell as it currently renders, rather than a
 		// fixed size — measure before emptying (which would collapse the cell).
 		const rect = td.getBoundingClientRect();
+		// A cell taller than a single line (wrapped long text) needs a textarea
+		// so the text wraps and stays visible; a single-line <input> would just
+		// scroll it horizontally. Numbers always use a single-line input.
+		const multiline = kind === 'text' && rect.height > 40;
 		td.empty();
-		const input = td.createEl('input', { type: 'text', cls: 'ntn-input' });
+		const input = multiline
+			? td.createEl('textarea', { cls: 'ntn-input ntn-textarea' })
+			: td.createEl('input', { type: 'text', cls: 'ntn-input' });
 		input.style.width = `${rect.width}px`;
 		input.style.height = `${rect.height}px`;
 		input.value = current;
@@ -227,8 +233,11 @@ export class NotionTableView extends BasesView {
 			void this.writeProperty(entry, propName, out);
 		};
 
-		input.addEventListener('keydown', (evt) => {
-			if (evt.key === 'Enter') {
+		input.addEventListener('keydown', (ev: Event) => {
+			const evt = ev as KeyboardEvent;
+			if (evt.key === 'Enter' && !evt.shiftKey) {
+				// Shift+Enter inserts a newline in the textarea; plain Enter commits.
+				evt.preventDefault();
 				commit();
 			} else if (evt.key === 'Escape') {
 				committed = true; // suppress blur commit

@@ -302,7 +302,19 @@
 	padding: 6px 8px;
 	font-family: inherit;
 	font-size: 14px;
+	line-height: 1.5;
 	color: var(--ntn-text);
+}
+
+/* Multi-line text cells edit in a textarea: wrap like the cell, start at the
+   top, and grow downward as the user types instead of scrolling sideways. */
+.ntn-textarea {
+	min-height: 32px;
+	resize: none;
+	overflow: auto;
+	white-space: pre-wrap;
+	word-break: normal;
+	vertical-align: top;
 }
 
 /* ---------------- Select editor (floating menu) ---------------- */
