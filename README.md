@@ -105,6 +105,27 @@ time. If it makes your vault a little nicer to work in, you can
 [buy me a coffee](https://buymeacoffee.com/umbertofrancesco) ☕ — it
 goes toward new features and keeping up with Obsidian's API changes.
 
+## Roadmap
+
+Where GoodBases is heading. These are directions, not dated promises —
+want to nudge one up the list?
+[Open an issue](https://github.com/FrancescoUmberto/GoodBases/issues).
+
+- ✅ **First public release** (0.3) — Notion-style table view: colored
+  pills, inline cell editing, the pill select editor, pinned colors,
+  hover-reveal OPEN button, grouping, and view options.
+- ✅ **Per-value color picker** (0.4) — recolor any value from Notion's
+  palette; your choice persists everywhere it appears. Cells wrap by
+  default.
+- 🔵 **Column resizing** (next) — drag handles on column borders, with
+  widths persisted per view.
+- 🔵 **Calculated footers** (next) — a Notion-style per-column
+  *Calculate* row (count, sum, average, and more).
+- 🔵 **Editable tags** (next) — extend the select editor to write `tags`
+  safely (currently read-only).
+- ⚪️ **Board & gallery views** (exploring) — Kanban boards and card
+  galleries; deprioritized for now while table fidelity comes first.
+
 ## Changelog
 
 The full history and downloadable builds are on the
