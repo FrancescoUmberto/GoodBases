@@ -131,6 +131,14 @@ want to nudge one up the list?
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
 
+### 0.4.5
+
+- **Fixed:** in dark mode the table header no longer shows a light
+  background — it now follows the page background like the rest of the
+  table.
+- **Fixed:** column headers now align consistently between editing and
+  reading mode (header text is vertically centered in both).
+
 ### 0.4.4
 
 - **Fixed:** long, multi-line text cells now edit in a textarea, so the

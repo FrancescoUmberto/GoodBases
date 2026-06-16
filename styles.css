@@ -51,6 +51,7 @@
 	font-size: 14px;
 	color: var(--ntn-text-muted);
 	text-align: left;
+	vertical-align: middle;
 	padding: 0 8px;
 	height: 34px;
 	border-bottom: 1px solid var(--ntn-border);
@@ -60,6 +61,36 @@
 	word-break: normal !important;
 	-webkit-user-select: none;
 	user-select: none;
+}
+
+/* Some themes (and Obsidian's core .markdown-rendered rules) fill table
+   headers with a light background, which looks wrong in dark mode. Keep the
+   header transparent so it follows the page background, like Notion. The
+   doubled class / thead selectors out-rank those theme rules by specificity
+   (see bug history #4) — don't reach for !important. */
+.ntn-root .ntn-table thead,
+.ntn-root .ntn-table thead tr,
+.ntn-root .ntn-th.ntn-th {
+	background: transparent;
+}
+
+/* Lock header/cell horizontal padding so reading mode matches edit mode. In
+   reading mode the view sits inside .markdown-rendered, whose core/theme
+   th/td padding (often padding-inline) out-ranks the base rules above and
+   shifts columns to the right. The doubled class wins by specificity
+   (see bug history #4) — keep the values in sync with .ntn-th / .ntn-td. */
+.ntn-root .ntn-th.ntn-th {
+	padding-left: 8px;
+	padding-right: 8px;
+	/* .ntn-th has no vertical-align by default; reading mode's
+	   .markdown-rendered th sets its own, so the header text lands at a
+	   different height than in edit mode. Pin it to middle (matching td). */
+	vertical-align: middle;
+}
+
+.ntn-root .ntn-td.ntn-td {
+	padding-left: 8px;
+	padding-right: 8px;
 }
 
 .ntn-th-icon {
