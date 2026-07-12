@@ -160,6 +160,15 @@ want to nudge one up the list?
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
 
+### 0.5.1
+
+- **Added:** the base's native toolbar **New** button now opens the page
+  panel too, while a GoodBases view is active (other Bases views keep
+  the core popover).
+- **Added:** an open-in-new-tab button next to the page panel's close
+  button — it saves pending edits, closes the panel, and opens the note
+  in a new tab.
+
 ### 0.5.0
 
 **📄 New — Notion-style page panel.** **+ New** now opens the freshly
