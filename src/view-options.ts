@@ -20,6 +20,16 @@ export function buildViewOptions(_config: BasesViewConfig): BasesAllOptions[] {
 			default: true,
 		},
 		{
+			type: 'dropdown',
+			key: 'openMode',
+			displayName: 'Open notes in',
+			default: 'tab',
+			options: {
+				tab: 'New tab',
+				panel: 'Page panel',
+			},
+		},
+		{
 			type: 'multitext',
 			key: 'pillProperties',
 			displayName: 'Properties to show as colored pills',

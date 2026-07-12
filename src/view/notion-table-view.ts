@@ -10,12 +10,15 @@ import {
 	BooleanValue,
 	Notice,
 	NumberValue,
+	Platform,
 	QueryController,
+	TFile,
 } from 'obsidian';
 import { LOG_PREFIX, NOTION_TABLE_VIEW } from '../constants';
 import { PinnedColors, applyPillColor, colorByName } from '../lib/colors';
 import { PillDetection, computePillProps, parsePinnedColors } from '../lib/pills';
 import { valueToStrings } from '../lib/values';
+import { NotePageModal, OpenSelectOpts } from './note-modal';
 import { SelectEditor } from './select-editor';
 
 export class NotionTableView extends BasesView {
@@ -95,7 +98,7 @@ export class NotionTableView extends BasesView {
 		const newRow = root.createDiv({ cls: 'ntn-new-row' });
 		newRow.createSpan({ cls: 'ntn-new-plus', text: '+' });
 		newRow.createSpan({ text: 'New' });
-		newRow.addEventListener('click', () => void this.createFileForView());
+		newRow.addEventListener('click', () => void this.createAndOpenPage());
 	}
 
 	private renderRow(
@@ -121,7 +124,13 @@ export class NotionTableView extends BasesView {
 		const openBtn = titleWrap.createSpan({ cls: 'ntn-open-btn', text: 'OPEN' });
 		openBtn.addEventListener('click', (evt) => {
 			evt.stopPropagation();
-			void this.app.workspace.openLinkText(entry.file.path, '', true);
+			// The `openMode` view option picks between a new tab (default)
+			// and the Notion-style page panel.
+			if (this.config.get('openMode') === 'panel') {
+				this.openPagePanel(entry.file);
+			} else {
+				void this.app.workspace.openLinkText(entry.file.path, '', true);
+			}
 		});
 
 		for (const prop of props) {
@@ -162,7 +171,7 @@ export class NotionTableView extends BasesView {
 			cb.checked = value.isTruthy();
 			if (editable) {
 				cb.addEventListener('change', () => {
-					void this.writeProperty(entry, propName, cb.checked);
+					void this.writeProperty(entry.file, propName, cb.checked);
 				});
 			} else {
 				cb.disabled = true;
@@ -230,7 +239,7 @@ export class NotionTableView extends BasesView {
 			} else if (raw === '') {
 				out = null;
 			}
-			void this.writeProperty(entry, propName, out);
+			void this.writeProperty(entry.file, propName, out);
 		};
 
 		input.addEventListener('keydown', (ev: Event) => {
@@ -247,9 +256,9 @@ export class NotionTableView extends BasesView {
 		input.addEventListener('blur', commit);
 	}
 
-	private async writeProperty(entry: BasesEntry, propName: string, value: unknown): Promise<void> {
+	private async writeProperty(file: TFile, propName: string, value: unknown): Promise<void> {
 		try {
-			await this.app.fileManager.processFrontMatter(entry.file, (fm: Record<string, unknown>) => {
+			await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
 				if (value === null) {
 					delete fm[propName];
 				} else {
@@ -264,34 +273,104 @@ export class NotionTableView extends BasesView {
 		}
 	}
 
+	/**
+	 * "+ New" flow: create the note through the core Bases flow — so it lands
+	 * in the configured folder and gets the frontmatter implied by the view's
+	 * filters — then edit it in the centered Notion-style page panel instead
+	 * of the small popover Obsidian anchors to the toolbar's New button.
+	 */
+	private async createAndOpenPage(): Promise<void> {
+		// On phones the core flow already opens the note in a full-screen tab.
+		if (Platform.isPhone) {
+			await this.createFileForView();
+			return;
+		}
+		// createFileForView resolves with void, so capture the file it
+		// creates through the vault's create event.
+		let created: TFile | undefined;
+		const ref = this.app.vault.on('create', (file) => {
+			if (file instanceof TFile) created = file;
+		});
+		try {
+			await this.createFileForView();
+		} finally {
+			this.app.vault.offref(ref);
+		}
+		if (!created) return;
+
+		// Dismiss the toolbar-anchored popover the core flow opened; the core
+		// new-item menu closes itself on any click outside the popover.
+		const doc = this.rootEl.doc;
+		if (doc.querySelector('.bases-new-item-popover')) doc.body.click();
+
+		this.openPagePanel(created);
+	}
+
+	/** Open a note centered in the Notion-style page panel. */
+	private openPagePanel(file: TFile): void {
+		new NotePageModal(this.app, file, {
+			applyColor: (pill, text) => this.applyPillColor(pill, text),
+			write: (f, propName, value) => this.writeProperty(f, propName, value),
+			isPillProp: (name) =>
+				this.pills.pillProps.has(`note.${name}` as BasesPropertyId),
+			isListProp: (name) =>
+				this.pills.listProps.has(`note.${name}` as BasesPropertyId),
+			openSelect: (opts) => this.openSelectAt(opts),
+			reanchorSelect: (anchor, filePath, propName) =>
+				void this.selectEditor?.reanchorIfMatches(
+					anchor, filePath, `note.${propName}` as BasesPropertyId,
+				),
+			closeSelect: () => this.closeSelectMenu(),
+		}).open();
+	}
+
 	/** Color a pill element using this view's pinned-color overrides. */
 	private applyPillColor(pill: HTMLElement, text: string): void {
 		applyPillColor(pill, text, this.pinnedColors);
 	}
 
-	/** Open the Notion-style select editor for a pill cell. */
+	/** Open the Notion-style select editor for a pill cell of the table. */
 	private openSelectEditor(
 		td: HTMLElement,
 		entry: BasesEntry,
 		prop: BasesPropertyId,
 		propName: string,
 	): void {
-		// Clicking the cell whose menu is already open toggles it shut.
-		if (this.selectEditor?.anchorEl === td) {
+		this.openSelectAt({
+			anchor: td,
+			file: entry.file,
+			propName,
+			current: valueToStrings(entry.getValue(prop)),
+			isList: this.pills.listProps.has(prop),
+		});
+	}
+
+	/**
+	 * Open the select editor anchored anywhere — a table cell or a property
+	 * row of the page panel. Known values always come from the live query
+	 * result; lifetime stays with the view (outside-click / Esc / unload).
+	 */
+	private openSelectAt(opts: OpenSelectOpts): void {
+		// Clicking the element whose menu is already open toggles it shut.
+		if (this.selectEditor?.anchorEl === opts.anchor) {
 			this.closeSelectMenu();
 			return;
 		}
 		this.closeSelectMenu();
+		const prop = `note.${opts.propName}` as BasesPropertyId;
 		this.selectEditor = new SelectEditor({
 			doc: this.rootEl.doc,
 			win: this.rootEl.win,
-			anchor: td,
+			anchor: opts.anchor,
 			entries: this.data.data,
-			entry,
+			file: opts.file,
+			current: opts.current,
 			prop,
-			isList: this.pills.listProps.has(prop),
+			isList: opts.isList,
 			applyColor: (pill, text) => this.applyPillColor(pill, text),
-			write: (value) => void this.writeProperty(entry, propName, value),
+			write: (value) =>
+				void this.writeProperty(opts.file, opts.propName, value)
+					.then(() => opts.onWrite?.()),
 			setColor: (value, colorName) => this.setPinnedColor(value, colorName),
 			onClose: () => { this.selectEditor = null; },
 		});

@@ -10,7 +10,7 @@
  * objects, so it survives the view's `onDataUpdated` re-renders. The owning
  * view drives lifetime — outside-click and unload both call {@link close}.
  */
-import { BasesEntry, BasesPropertyId } from 'obsidian';
+import { BasesEntry, BasesPropertyId, TFile } from 'obsidian';
 import { NOTION_COLORS, applyColorVars } from '../lib/colors';
 import { valueToStrings } from '../lib/values';
 
@@ -23,8 +23,10 @@ export interface SelectEditorDeps {
 	anchor: HTMLElement;
 	/** Every entry in the current result, used to list the known values. */
 	entries: BasesEntry[];
-	/** The entry being edited. */
-	entry: BasesEntry;
+	/** The file being edited (a `TFile` is stable across data updates). */
+	file: TFile;
+	/** The values currently set on the file, in display form. */
+	current: string[];
 	/** Property being edited. */
 	prop: BasesPropertyId;
 	/** True for list (multi-select) properties; false for scalar (single-select). */
@@ -55,7 +57,7 @@ export class SelectEditor {
 	private input!: HTMLInputElement;
 
 	constructor(private readonly deps: SelectEditorDeps) {
-		const { entries, entry, prop } = deps;
+		const { entries, current, prop } = deps;
 
 		for (const e of entries) {
 			for (const s of valueToStrings(e.getValue(prop))) {
@@ -66,9 +68,7 @@ export class SelectEditor {
 			}
 		}
 
-		this.selected = valueToStrings(entry.getValue(prop)).map((s) =>
-			s.replace(/^#/, ''),
-		);
+		this.selected = current.map((s) => s.replace(/^#/, ''));
 
 		this.menu = this.build();
 		this.position();
@@ -93,7 +93,7 @@ export class SelectEditor {
 	 */
 	reanchorIfMatches(td: HTMLElement, filePath: string, prop: BasesPropertyId): boolean {
 		if (this.closed) return false;
-		if (this.deps.prop !== prop || this.deps.entry.file.path !== filePath) return false;
+		if (this.deps.prop !== prop || this.deps.file.path !== filePath) return false;
 		this.deps.anchor = td;
 		return true;
 	}
@@ -230,6 +230,10 @@ export class SelectEditor {
 
 	private onKeydown(evt: KeyboardEvent): void {
 		if (evt.key === 'Escape') {
+			// Consume the key: inside the page panel, a bubbling Esc would
+			// close the whole modal along with the menu.
+			evt.preventDefault();
+			evt.stopPropagation();
 			this.close();
 		} else if (evt.key === 'Enter') {
 			const q = this.input.value.trim();

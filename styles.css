@@ -546,6 +546,189 @@
 	opacity: 0.6;
 }
 
+/* ---------------- Notion-style page panel ("+ New") ---------------- */
+
+/* The panel is an Obsidian Modal, so it lives outside .ntn-root and carries
+   its own copy of the Notion text tokens (same values as .ntn-root). The
+   .modal class is doubled in so the size overrides outrank core's .modal
+   width/max-width without !important. */
+.modal.ntn-page-modal {
+	--ntn-text: rgb(55, 53, 47);
+	--ntn-text-muted: rgba(55, 53, 47, 0.65);
+	--ntn-border: rgb(233, 233, 231);
+	--ntn-hover: rgba(55, 53, 47, 0.04);
+	width: min(900px, 90vw);
+	max-width: 90vw;
+	height: min(85vh, 720px);
+	max-height: 85vh;
+	padding: 0;
+}
+
+.theme-dark .modal.ntn-page-modal {
+	--ntn-text: rgba(255, 255, 255, 0.81);
+	--ntn-text-muted: rgba(255, 255, 255, 0.443);
+	--ntn-border: rgb(47, 47, 47);
+	--ntn-hover: rgba(255, 255, 255, 0.055);
+}
+
+.ntn-page-content {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 44px 72px 32px;
+	overflow-y: auto;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+		Arial, sans-serif;
+}
+
+/* Title and body are chromeless inputs: the panel itself is the frame.
+   Obsidian's own input/textarea chrome (border + focus ring) outranks a
+   bare class on :hover/:focus, so every state is pinned chromeless with
+   the doubled class (see bug history #4). */
+.ntn-page-title.ntn-page-title,
+.ntn-page-body.ntn-page-body,
+.ntn-page-title.ntn-page-title:hover,
+.ntn-page-title.ntn-page-title:focus,
+.ntn-page-body.ntn-page-body:hover,
+.ntn-page-body.ntn-page-body:active,
+.ntn-page-body.ntn-page-body:focus,
+.ntn-page-body.ntn-page-body:focus-visible {
+	border: none;
+	outline: none;
+	box-shadow: none;
+	background: transparent;
+}
+
+.ntn-page-title,
+.ntn-page-body {
+	padding: 0;
+	font-family: inherit;
+	color: var(--ntn-text);
+}
+
+/* The title is a contenteditable h1; the doubled class outranks core /
+   theme heading rules inside modals (same trick as the table in reading
+   mode — see bug history #4). */
+.ntn-page-title.ntn-page-title {
+	margin: 0 0 12px;
+	font-size: 32px;
+	font-weight: 700;
+	line-height: 1.2;
+	cursor: text;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+/* contenteditable has no placeholder attribute; fake it when empty. */
+.ntn-page-title:empty::before {
+	content: attr(data-placeholder);
+	color: var(--ntn-text-muted);
+}
+
+.ntn-page-body {
+	flex: 1;
+	resize: none;
+	font-size: 16px;
+	line-height: 1.6;
+}
+
+.ntn-page-body::placeholder {
+	color: var(--ntn-text-muted);
+}
+
+/* Rendered-markdown view of the body (click to switch to the textarea).
+   The markdown-rendered class brings Obsidian's own heading / list / code
+   typography; the doubled class pins the base text style over it. */
+.ntn-page-preview.ntn-page-preview {
+	flex: 1;
+	cursor: text;
+	min-height: 120px;
+	padding: 0;
+	font-size: 16px;
+	line-height: 1.6;
+	color: var(--ntn-text);
+}
+
+.ntn-page-preview > :first-child {
+	margin-top: 0;
+}
+
+.ntn-page-preview-empty {
+	color: var(--ntn-text-muted);
+}
+
+/* Body preview and textarea swap via this class, never both visible. */
+.ntn-page-content .ntn-hidden {
+	display: none;
+}
+
+/* ---- Property rows under the title, like Notion's page properties ---- */
+
+.ntn-page-props {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	margin-bottom: 16px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid var(--ntn-border);
+}
+
+/* Notes without frontmatter get no (empty) properties section chrome. */
+.ntn-page-props:empty {
+	display: none;
+}
+
+.ntn-page-prop {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 30px;
+	font-size: 14px;
+}
+
+.ntn-page-prop-name {
+	flex: 0 0 140px;
+	color: var(--ntn-text-muted);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.ntn-page-prop-value {
+	flex: 1;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+	color: var(--ntn-text);
+}
+
+.ntn-page-prop-empty {
+	color: var(--ntn-text-muted);
+}
+
+/* Editable rows get Notion's hover wash; negative margin keeps the value
+   text aligned while giving the wash some breathing room. */
+.ntn-page-prop-value.ntn-page-prop-editable {
+	cursor: pointer;
+	margin-left: -6px;
+	padding: 3px 6px;
+	border-radius: 4px;
+	transition: background 20ms ease-in;
+}
+
+.ntn-page-prop-value.ntn-page-prop-editable:hover {
+	background: var(--ntn-hover);
+}
+
+/* The inline property editor reuses the table's floating-card input, but
+   sized by flex instead of a measured cell rect. */
+.ntn-input.ntn-page-prop-input {
+	flex: 1;
+	max-width: 360px;
+}
+
 /* The Notion-style Bases-toolbar restyle (blue "New" split button +
    icon-only controls) lives in an OPTIONAL CSS snippet, not here:
    snippets/goodbases-notion-toolbar.css. It targets Obsidian core UI
