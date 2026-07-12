@@ -160,6 +160,14 @@ want to nudge one up the list?
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
 
+### 0.5.3
+
+- **Changed:** addressed the community plugin review feedback — inline
+  styles now go through Obsidian's `setCssStyles`/`setCssProps` APIs,
+  modal lifecycle methods match Obsidian's types, and `styles.css` no
+  longer uses `!important` (overrides win by selector specificity
+  instead). No functional changes.
+
 ### 0.5.2
 
 - **Fixed:** in the page panel, editing the body of a note with many
