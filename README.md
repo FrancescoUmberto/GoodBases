@@ -160,6 +160,12 @@ want to nudge one up the list?
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
 
+### 0.5.2
+
+- **Fixed:** in the page panel, editing the body of a note with many
+  properties could squeeze the editor to nothing, hiding the content —
+  the editor now grows with its content and the panel scrolls.
+
 ### 0.5.1
 
 - **Added:** the base's native toolbar **New** button now opens the page
