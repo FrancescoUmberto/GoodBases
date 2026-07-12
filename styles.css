@@ -31,17 +31,19 @@
    keeps the table filling wide panes. In narrow containers (embeds, both
    reading and edit mode) the table overflows into .ntn-root's horizontal
    scroll instead of crushing every column to ~30px.
-   !important is required: in reading mode the view sits inside
+   The doubled class matters: in reading mode the view sits inside
    .markdown-rendered, where Obsidian's and themes' `table` rules
-   (e.g. `.markdown-rendered table { width: 100% }`) outrank a bare
-   class selector and re-crush the columns. */
-.ntn-root .ntn-table {
+   (e.g. `.markdown-rendered table { width: 100% }`) outrank a bare class
+   selector and re-crush the columns. (0,3,0) outranks them by specificity
+   alone — don't simplify it back or reach for !important (community CSS
+   lint); if a theme still wins, add MORE specificity. */
+.ntn-root .ntn-table.ntn-table {
 	border-collapse: collapse;
-	display: table !important;
-	table-layout: auto !important;
-	width: max-content !important;
-	min-width: 100% !important;
-	max-width: none !important;
+	display: table;
+	table-layout: auto;
+	width: max-content;
+	min-width: 100%;
+	max-width: none;
 	border-top: 1px solid var(--ntn-border);
 	margin: 0;
 }
@@ -55,10 +57,6 @@
 	padding: 0 8px;
 	height: 34px;
 	border-bottom: 1px solid var(--ntn-border);
-	/* Reading-mode th rules from Obsidian/themes wrap header text — keep
-	   headers on one line so columns size to their natural width. */
-	white-space: nowrap !important;
-	word-break: normal !important;
 	-webkit-user-select: none;
 	user-select: none;
 }
@@ -86,11 +84,19 @@
 	   .markdown-rendered th sets its own, so the header text lands at a
 	   different height than in edit mode. Pin it to middle (matching td). */
 	vertical-align: middle;
+	/* Reading-mode th rules from Obsidian/themes wrap header text — keep
+	   headers on one line so columns size to their natural width. */
+	white-space: nowrap;
+	word-break: normal;
 }
 
 .ntn-root .ntn-td.ntn-td {
 	padding-left: 8px;
 	padding-right: 8px;
+	/* Obsidian's editor/reading-mode styles set break-word/break-all;
+	   in a squeezed column that wraps text one character per line. */
+	word-break: normal;
+	overflow-wrap: normal;
 }
 
 .ntn-th-icon {
@@ -119,25 +125,24 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	max-width: 280px;
-	/* Obsidian's editor/reading-mode styles set break-word/break-all;
-	   in a squeezed column that wraps text one character per line. */
-	word-break: normal !important;
-	overflow-wrap: normal !important;
 }
 
 /* Rendered values (links, dates…) carry their own white-space and
    word-break rules in reading mode — force them to stay on one line;
    the cell truncates with ellipsis. Scoped so "Wrap cell content"
-   (.ntn-wrap) can still wrap, but never break inside words. */
-.ntn-root:not(.ntn-wrap) .ntn-cell,
-.ntn-root:not(.ntn-wrap) .ntn-cell * {
-	white-space: nowrap !important;
+   (.ntn-wrap) can still wrap, but never break inside words. The doubled
+   .ntn-cell out-ranks core/theme rules on rendered content (external
+   links use break-all) by specificity — no !important (see bug
+   history #4). */
+.ntn-root:not(.ntn-wrap) .ntn-cell.ntn-cell,
+.ntn-root:not(.ntn-wrap) .ntn-cell.ntn-cell * {
+	white-space: nowrap;
 }
 
-.ntn-root .ntn-cell,
-.ntn-root .ntn-cell * {
-	word-break: normal !important;
-	overflow-wrap: normal !important;
+.ntn-root .ntn-cell.ntn-cell,
+.ntn-root .ntn-cell.ntn-cell * {
+	word-break: normal;
+	overflow-wrap: normal;
 }
 
 .ntn-wrap .ntn-td {

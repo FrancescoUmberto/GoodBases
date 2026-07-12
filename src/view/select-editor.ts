@@ -279,22 +279,24 @@ export class SelectEditor {
 	/** Anchor the main menu below the cell, then clamp into the window. */
 	private position(): void {
 		const rect = this.deps.anchor.getBoundingClientRect();
-		this.menu.style.minWidth = `${Math.max(rect.width, 220)}px`;
+		this.menu.setCssStyles({ minWidth: `${Math.max(rect.width, 220)}px` });
 		this.clampToWindow(this.menu, rect);
 	}
 
 	/** Place a popover just below `anchorRect`, nudged to stay on screen. */
 	private clampToWindow(el: HTMLElement, anchorRect: DOMRect): void {
 		const { win } = this.deps;
-		el.style.left = `${anchorRect.left}px`;
-		el.style.top = `${anchorRect.bottom + 4}px`;
+		el.setCssStyles({
+			left: `${anchorRect.left}px`,
+			top: `${anchorRect.bottom + 4}px`,
+		});
 
 		const rect = el.getBoundingClientRect();
 		if (rect.bottom > win.innerHeight - 8) {
-			el.style.top = `${Math.max(8, anchorRect.top - rect.height - 4)}px`;
+			el.setCssStyles({ top: `${Math.max(8, anchorRect.top - rect.height - 4)}px` });
 		}
 		if (rect.right > win.innerWidth - 8) {
-			el.style.left = `${Math.max(8, win.innerWidth - rect.width - 8)}px`;
+			el.setCssStyles({ left: `${Math.max(8, win.innerWidth - rect.width - 8)}px` });
 		}
 	}
 }

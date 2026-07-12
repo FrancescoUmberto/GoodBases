@@ -64,10 +64,12 @@ export function resolvePillColor(text: string, pinned: PinnedColors): NotionColo
 
 /** Set the per-pill CSS variables on an element from an exact palette color. */
 export function applyColorVars(el: HTMLElement, c: NotionColor): void {
-	el.style.setProperty('--ntn-pill-bg-light', c.lightBg);
-	el.style.setProperty('--ntn-pill-fg-light', c.lightFg);
-	el.style.setProperty('--ntn-pill-bg-dark', c.darkBg);
-	el.style.setProperty('--ntn-pill-fg-dark', c.darkFg);
+	el.setCssProps({
+		'--ntn-pill-bg-light': c.lightBg,
+		'--ntn-pill-fg-light': c.lightFg,
+		'--ntn-pill-bg-dark': c.darkBg,
+		'--ntn-pill-fg-dark': c.darkFg,
+	});
 }
 
 /** Apply a resolved pill color (pinned override ?? hash) to an element. */

@@ -74,7 +74,12 @@ export class NotePageModal extends Modal {
 		this.deps = deps;
 	}
 
-	async onOpen(): Promise<void> {
+	onOpen(): void {
+		// Modal.onOpen is typed void; the actual build is async (file read).
+		void this.buildPanel();
+	}
+
+	private async buildPanel(): Promise<void> {
 		const { contentEl, modalEl } = this;
 		modalEl.addClass('ntn-page-modal');
 		contentEl.addClass('ntn-page-content');
@@ -180,8 +185,8 @@ export class NotePageModal extends Modal {
 	 * textarea to nothing (many-properties bug, July 2026).
 	 */
 	private autoSizeBody(): void {
-		this.bodyArea.style.height = 'auto';
-		this.bodyArea.style.height = `${this.bodyArea.scrollHeight + 2}px`;
+		this.bodyArea.setCssStyles({ height: 'auto' });
+		this.bodyArea.setCssStyles({ height: `${this.bodyArea.scrollHeight + 2}px` });
 	}
 
 	/** Swap the textarea back for the freshly rendered markdown. */
@@ -408,14 +413,20 @@ export class NotePageModal extends Modal {
 		}
 	}
 
-	async onClose(): Promise<void> {
+	onClose(): void {
 		this.deps.closeSelect();
 		this.renderComp?.unload();
 		this.renderComp = null;
 		if (this.saveTimer !== null) this.contentEl.win.clearTimeout(this.saveTimer);
 		// Final flush so the last keystrokes and title edit are never lost.
+		// Runs async (Modal.onClose is typed void); the input elements stay
+		// alive in the closure even after the modal DOM is emptied.
+		void this.flushPendingEdits();
+		this.contentEl.empty();
+	}
+
+	private async flushPendingEdits(): Promise<void> {
 		if (this.dirty) await this.saveBody();
 		await this.commitTitle();
-		this.contentEl.empty();
 	}
 }

@@ -233,8 +233,7 @@ export class NotionTableView extends BasesView {
 		const input = multiline
 			? td.createEl('textarea', { cls: 'ntn-input ntn-textarea' })
 			: td.createEl('input', { type: 'text', cls: 'ntn-input' });
-		input.style.width = `${rect.width}px`;
-		input.style.height = `${rect.height}px`;
+		input.setCssStyles({ width: `${rect.width}px`, height: `${rect.height}px` });
 		input.value = current;
 		input.focus();
 		input.select();
@@ -307,13 +306,13 @@ export class NotionTableView extends BasesView {
 			return;
 		}
 
-		const orig = menu.open;
+		const orig = menu.open.bind(menu);
 		const patched = async (
 			name?: string,
 			fmProc?: (fm: Record<string, unknown>) => void,
 		): Promise<void> => {
 			// Phones already get a full-screen tab from the core flow.
-			if (Platform.isPhone) return orig.call(menu, name, fmProc);
+			if (Platform.isPhone) return orig(name, fmProc);
 			let created: TFile | undefined;
 			const ref = this.app.vault.on('create', (file) => {
 				if (file instanceof TFile) created = file;
@@ -324,7 +323,7 @@ export class NotionTableView extends BasesView {
 			try {
 				// The core flow still creates the file (folder + filter
 				// frontmatter) and opens its popover, hidden by the class above.
-				await orig.call(menu, name, fmProc);
+				await orig(name, fmProc);
 			} finally {
 				this.app.vault.offref(ref);
 				menu.close(); // tear down the hidden popover
@@ -336,8 +335,8 @@ export class NotionTableView extends BasesView {
 		menu.open = patched;
 		this.newButtonPatched = true;
 		this.register(() => {
-			// Restore only if nothing else re-patched after us.
-			if (menu.open === patched) menu.open = orig;
+			// The bound original behaves identically for any later caller.
+			menu.open = orig;
 			this.newButtonPatched = false;
 		});
 	}
