@@ -15,6 +15,25 @@ value pills, and inline cell editing.
 
 ![Inline editing and pill select menu in action](docs/asset/demo.gif)
 
+## The page panel
+
+Click **+ New** (or set *Open notes in* to *Page panel* and use the
+hover OPEN button) to work on a note without leaving the table, in a
+centered Notion-style panel:
+
+![The Notion-style page panel](docs/asset/panel.png)
+
+- **Title** — a real heading; type to rename the note, Enter jumps to
+  the body.
+- **Properties** — the note's frontmatter, editable exactly like the
+  table: pill values open the select editor (with the color picker),
+  checkboxes toggle in place, text and numbers edit inline.
+- **Body** — rendered as formatted Markdown; click it to edit the
+  source, click away and it renders again. Changes save automatically
+  as you type.
+
+![Creating and editing a note in the page panel](docs/asset/panel_demo.gif)
+
 ## Features
 
 - **Notion-style table** — system font stack, hairline borders, hover
@@ -35,10 +54,16 @@ value pills, and inline cell editing.
   floating input; checkboxes toggle in place. Pill cells open a
   select-style menu listing every value already used for that property,
   with search and create-on-Enter.
+- **Page panel** — **+ New** opens the freshly created note centered in
+  a Notion-style panel: an editable title, the note's properties
+  (editable just like the table), and the body rendered as formatted
+  Markdown. See [The page panel](#the-page-panel).
+- **Choose what OPEN does** — the *Open notes in* view option points the
+  hover OPEN button at a new tab (default) or at the page panel.
 - **Grouping support** — respects the Bases `group by` configuration.
 - **View options** — wrap cell content (on by default), toggle vertical
-  lines, force specific properties to render as pills, and pin pill
-  colors.
+  lines, choose how OPEN opens notes, force specific properties to
+  render as pills, and pin pill colors.
 
 ## Usage
 
@@ -47,7 +72,8 @@ value pills, and inline cell editing.
    **Notion-style table**.
 3. Configure columns, filters, sorting, and grouping with the normal
    Bases controls; this view adds its own options (wrapping, vertical
-   lines, pill properties, pinned colors) in the view settings.
+   lines, open mode, pill properties, pinned colors) in the view
+   settings.
 
 Notes on editing:
 
@@ -117,6 +143,9 @@ want to nudge one up the list?
 - ✅ **Per-value color picker** (0.4) — recolor any value from Notion's
   palette; your choice persists everywhere it appears. Cells wrap by
   default.
+- ✅ **Page panel** (0.5) — create and open notes in a centered
+  Notion-style panel: editable title and properties, body rendered as
+  formatted Markdown, and an *Open notes in* option for the OPEN button.
 - 🔵 **Column resizing** (next) — drag handles on column borders, with
   widths persisted per view.
 - 🔵 **Calculated footers** (next) — a Notion-style per-column
@@ -130,6 +159,20 @@ want to nudge one up the list?
 
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
+
+### 0.5.0
+
+**📄 New — Notion-style page panel.** **+ New** now opens the freshly
+created note centered in a panel, like Notion's page peek: an editable
+title, the note's properties — pills open the same select editor as the
+table, checkboxes toggle, text and numbers edit inline — and the body
+rendered as formatted Markdown (click to edit the source, click away to
+render it again; changes autosave as you type).
+
+Also in this release:
+
+- **Added:** an *Open notes in* view option — point the hover OPEN
+  button at a new tab (default) or at the page panel.
 
 ### 0.4.5
 

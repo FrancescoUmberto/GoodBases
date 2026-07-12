@@ -70,10 +70,17 @@
 				every known value, search, and create-on-Enter.</p>
 			</div>
 			<div class="card">
+				<span class="pill gray">Panel</span>
+				<h3>Notion-style page panel</h3>
+				<p><strong>+ New</strong> opens the note centered in a panel, like
+				Notion's page peek: editable title, editable properties, and the
+				body rendered as formatted Markdown — click to edit the source.</p>
+			</div>
+			<div class="card">
 				<span class="pill purple">OPEN</span>
 				<h3>Hover-reveal OPEN button</h3>
-				<p>Hover a row to reveal an OPEN button that jumps to the note,
-				just like Notion's database rows.</p>
+				<p>Hover a row to reveal an OPEN button that jumps to the note —
+				in a new tab or straight into the page panel, your choice.</p>
 			</div>
 			<div class="card">
 				<span class="pill pink">Groups</span>
@@ -84,9 +91,9 @@
 			<div class="card">
 				<span class="pill orange">Options</span>
 				<h3>View options</h3>
-				<p>Wrap cell content, toggle vertical lines, force properties to
-				render as pills, and pin pill colors — all from the view's
-				settings menu.</p>
+				<p>Wrap cell content, toggle vertical lines, choose how OPEN
+				opens notes, force properties to render as pills, and pin pill
+				colors — all from the view's settings menu.</p>
 			</div>
 		</div>
 	</section>
@@ -95,6 +102,10 @@
 		<h2>Demo</h2>
 		<img class="shot" src="asset/demo.gif" alt="Inline editing and the pill select menu in action">
 		<p class="caption">Inline editing and the select menu in action.</p>
+		<img class="shot" src="asset/panel_demo.gif" alt="Creating a note with + New and editing it in the Notion-style page panel">
+		<p class="caption">The page panel — <strong>+ New</strong> opens the note
+			in a centered panel with an editable title, editable properties, and
+			the body rendered as formatted Markdown.</p>
 		<img class="shot" src="asset/zoom.png" alt="The pill select editor: current values as removable pills, a search-or-create input, and every known value for the property">
 		<p class="caption">The pill select editor up close — current values as
 			removable pills, search or create on Enter, and every value already
@@ -117,6 +128,14 @@
 						<span class="marker done">0.4 · shipped</span></div>
 					<p>Recolor any value from Notion's palette; your choice persists
 						everywhere it appears. Cells wrap by default.</p>
+				</li>
+				<li class="done">
+					<div class="head"><strong>Page panel</strong>
+						<span class="marker done">0.5 · shipped</span></div>
+					<p>Create and open notes in a centered Notion-style panel —
+						editable title and properties, body rendered as formatted
+						Markdown — plus an “Open notes in” option for the OPEN
+						button.</p>
 				</li>
 				<li class="next">
 					<div class="head"><strong>Column resizing</strong>
@@ -157,8 +176,28 @@
 
 			<details class="release" open>
 				<summary>
-					<span class="ver">0.4.5</span>
+					<span class="ver">0.5.0</span>
 					<span class="tag">Latest</span>
+					<span class="tag major">Major</span>
+				</summary>
+				<div class="body">
+					<p class="headline">📄 <strong>New Notion-style page panel.</strong>
+						<strong>+ New</strong> now opens the freshly created note
+						centered in a panel, like Notion's page peek: an editable
+						title, the note's properties, and the body rendered as formatted Markdown</p>
+					<img class="shot" src="asset/panel.png" alt="The Notion-style page panel with editable title, properties, and rendered Markdown body">
+					<img class="shot" src="asset/panel_demo.gif" alt="Creating and editing a note in the page panel">
+					<p>Also in this release:</p>
+					<ul>
+						<li>Added an “Open notes in” view option — point the hover
+							OPEN button at a new tab (default) or at the page panel.</li>
+					</ul>
+				</div>
+			</details>
+
+			<details class="release">
+				<summary>
+					<span class="ver">0.4.5</span>
 				</summary>
 				<div class="body">
 					<ul>
