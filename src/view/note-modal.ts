@@ -19,6 +19,7 @@ import {
 	Notice,
 	TFile,
 	parseYaml,
+	setIcon,
 } from 'obsidian';
 import { LOG_PREFIX } from '../constants';
 import { splitFrontmatter } from '../lib/frontmatter';
@@ -77,6 +78,26 @@ export class NotePageModal extends Modal {
 		const { contentEl, modalEl } = this;
 		modalEl.addClass('ntn-page-modal');
 		contentEl.addClass('ntn-page-content');
+
+		// ---- Open-in-new-tab button, next to the modal's close X ----
+		const openTabBtn = modalEl.createDiv({
+			cls: 'ntn-page-open-tab',
+			attr: { 'aria-label': 'Open in new tab', tabindex: '0' },
+		});
+		setIcon(openTabBtn, 'maximize-2');
+		const openInTab = () => {
+			// close() flushes the pending body/title writes (onClose); opening
+			// by TFile keeps working even if the title rename lands after.
+			this.close();
+			void this.app.workspace.getLeaf(true).openFile(this.file);
+		};
+		openTabBtn.addEventListener('click', openInTab);
+		openTabBtn.addEventListener('keydown', (evt) => {
+			if (evt.key === 'Enter' || evt.key === ' ') {
+				evt.preventDefault();
+				openInTab();
+			}
+		});
 
 		// ---- Title: an editable h1, like Notion's page title ----
 		this.pageTitleEl = contentEl.createEl('h1', {

@@ -571,6 +571,27 @@
 	--ntn-hover: rgba(255, 255, 255, 0.055);
 }
 
+/* Open-in-new-tab button, sitting just left of the modal's own close X
+   (core positions the X at var(--size-2-3) with var(--size-2-2) padding —
+   the 28px offset is one icon-button width plus a small gap). */
+.ntn-page-modal .ntn-page-open-tab {
+	position: absolute;
+	top: var(--size-2-3);
+	inset-inline-end: calc(var(--size-2-3) + 28px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--size-2-2);
+	border-radius: var(--radius-s);
+	color: var(--ntn-text-muted);
+	cursor: pointer;
+}
+
+.ntn-page-modal .ntn-page-open-tab:hover {
+	background: var(--ntn-hover);
+	color: var(--ntn-text);
+}
+
 .ntn-page-content {
 	display: flex;
 	flex-direction: column;
@@ -659,6 +680,14 @@
 
 /* Body preview and textarea swap via this class, never both visible. */
 .ntn-page-content .ntn-hidden {
+	display: none;
+}
+
+/* While the view reroutes the toolbar's New button to the page panel, the
+   core popover still gets created for an instant before being torn down —
+   this keeps it from flashing on screen. Toggled on body only during that
+   flow (see patchToolbarNew). */
+.ntn-hide-new-popover .bases-new-item-popover {
 	display: none;
 }
 

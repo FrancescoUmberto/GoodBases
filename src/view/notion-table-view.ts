@@ -21,9 +21,22 @@ import { valueToStrings } from '../lib/values';
 import { NotePageModal, OpenSelectOpts } from './note-modal';
 import { SelectEditor } from './select-editor';
 
+/**
+ * Internal shape of the core toolbar's new-item menu (`QueryController.
+ * newItemMenu` — not in the public API). Guarded at runtime before use.
+ */
+interface CoreNewItemMenu {
+	open(name?: string, frontmatterProcessor?: (fm: Record<string, unknown>) => void): Promise<void>;
+	close(): void;
+}
+
 export class NotionTableView extends BasesView {
 	readonly type = NOTION_TABLE_VIEW;
 	private rootEl: HTMLElement;
+	/** The controller this view was created for (holds the core toolbar). */
+	private readonly queryCtrl: QueryController;
+	/** True while the toolbar's New button is rerouted to the page panel. */
+	private newButtonPatched = false;
 	/** Pill / list classification, recomputed each update. */
 	private pills: PillDetection = { pillProps: new Set(), listProps: new Set() };
 	/** User-pinned value → color overrides from the `pinnedColors` view option. */
@@ -33,6 +46,7 @@ export class NotionTableView extends BasesView {
 
 	constructor(controller: QueryController, parentEl: HTMLElement) {
 		super(controller);
+		this.queryCtrl = controller;
 		this.rootEl = parentEl.createDiv({ cls: 'ntn-root' });
 		this.register(() => this.closeSelectMenu());
 		// rootEl.doc resolves to the view's own document, so this also works
@@ -49,9 +63,13 @@ export class NotionTableView extends BasesView {
 			if (this.selectEditor.anchorEl.contains(target)) return;
 			this.closeSelectMenu();
 		}, { capture: true });
+		this.patchToolbarNew();
 	}
 
 	onDataUpdated(): void {
+		// The toolbar may not have existed at construction time; retry until
+		// the patch lands (no-op once it has).
+		this.patchToolbarNew();
 		const root = this.rootEl;
 		root.empty();
 
@@ -274,14 +292,67 @@ export class NotionTableView extends BasesView {
 	}
 
 	/**
+	 * Reroute the core toolbar's New button to the page panel while this
+	 * view is active. The button lives on the query controller, outside this
+	 * view's DOM, so its menu's `open` is shadowed on the instance and
+	 * restored on unload. `newItemMenu` is internal API — if it ever moves,
+	 * the guard below simply leaves the core behavior untouched (and the
+	 * footer "+ New" falls back to its own capture flow).
+	 */
+	private patchToolbarNew(): void {
+		if (this.newButtonPatched) return;
+		const menu = (this.queryCtrl as unknown as { newItemMenu?: CoreNewItemMenu })
+			.newItemMenu;
+		if (!menu || typeof menu.open !== 'function' || typeof menu.close !== 'function') {
+			return;
+		}
+
+		const orig = menu.open;
+		const patched = async (
+			name?: string,
+			fmProc?: (fm: Record<string, unknown>) => void,
+		): Promise<void> => {
+			// Phones already get a full-screen tab from the core flow.
+			if (Platform.isPhone) return orig.call(menu, name, fmProc);
+			let created: TFile | undefined;
+			const ref = this.app.vault.on('create', (file) => {
+				if (file instanceof TFile) created = file;
+			});
+			// Keep the core popover invisible for the instant it exists.
+			const body = this.rootEl.doc.body;
+			body.addClass('ntn-hide-new-popover');
+			try {
+				// The core flow still creates the file (folder + filter
+				// frontmatter) and opens its popover, hidden by the class above.
+				await orig.call(menu, name, fmProc);
+			} finally {
+				this.app.vault.offref(ref);
+				menu.close(); // tear down the hidden popover
+				body.removeClass('ntn-hide-new-popover');
+			}
+			if (created) this.openPagePanel(created);
+		};
+
+		menu.open = patched;
+		this.newButtonPatched = true;
+		this.register(() => {
+			// Restore only if nothing else re-patched after us.
+			if (menu.open === patched) menu.open = orig;
+			this.newButtonPatched = false;
+		});
+	}
+
+	/**
 	 * "+ New" flow: create the note through the core Bases flow — so it lands
 	 * in the configured folder and gets the frontmatter implied by the view's
 	 * filters — then edit it in the centered Notion-style page panel instead
 	 * of the small popover Obsidian anchors to the toolbar's New button.
 	 */
 	private async createAndOpenPage(): Promise<void> {
-		// On phones the core flow already opens the note in a full-screen tab.
-		if (Platform.isPhone) {
+		// On phones the core flow already opens the note in a full-screen
+		// tab; with the toolbar patch in place, createFileForView routes
+		// through the patched menu, which opens the panel for us.
+		if (Platform.isPhone || this.newButtonPatched) {
 			await this.createFileForView();
 			return;
 		}
