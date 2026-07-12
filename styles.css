@@ -646,9 +646,16 @@
 	color: var(--ntn-text-muted);
 }
 
+/* flex: none — as a flex:1 item (basis 0) the textarea could be crushed to
+   zero height once the title + a long properties list already fill the
+   panel, leaving the body unreadable while editing. Height is set by
+   autoSizeBody() to fit the content; the panel itself scrolls. */
 .ntn-page-body {
-	flex: 1;
+	flex: none;
+	width: 100%;
+	min-height: 280px;
 	resize: none;
+	overflow: hidden;
 	font-size: 16px;
 	line-height: 1.6;
 }

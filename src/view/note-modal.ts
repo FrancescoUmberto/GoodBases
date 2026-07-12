@@ -146,7 +146,10 @@ export class NotePageModal extends Modal {
 			attr: { placeholder: 'Write something…' },
 		});
 		this.bodyArea.value = body;
-		this.bodyArea.addEventListener('input', () => this.scheduleSave());
+		this.bodyArea.addEventListener('input', () => {
+			this.autoSizeBody();
+			this.scheduleSave();
+		});
 		this.bodyArea.addEventListener('blur', () => {
 			if (this.dirty) void this.saveBody();
 			void this.showPreview();
@@ -166,7 +169,19 @@ export class NotePageModal extends Modal {
 	private editBody(): void {
 		this.previewEl.addClass('ntn-hidden');
 		this.bodyArea.removeClass('ntn-hidden');
+		this.autoSizeBody();
 		this.bodyArea.focus();
+	}
+
+	/**
+	 * Grow the textarea to fit its content so the whole body stays readable
+	 * while editing — the panel scrolls, the textarea never does. Without
+	 * this, a long properties list plus the title can crush a flex-sized
+	 * textarea to nothing (many-properties bug, July 2026).
+	 */
+	private autoSizeBody(): void {
+		this.bodyArea.style.height = 'auto';
+		this.bodyArea.style.height = `${this.bodyArea.scrollHeight + 2}px`;
 	}
 
 	/** Swap the textarea back for the freshly rendered markdown. */
