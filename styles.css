@@ -252,18 +252,35 @@
 	max-width: 100%;
 	padding: 0 6px;
 	border-radius: 3px;
-	font-size: 14px;
+	font-size: 13px;
+	font-weight: 500;
 	line-height: 120%;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	background: var(--ntn-pill-bg-light, #EBECED);
-	color: var(--ntn-pill-fg-light, #9B9A97);
+	background-color: var(--ntn-pill-bg-dark, var(--ntn-pill-bg-light, #454B4E)) !important;
+	color: var(--ntn-pill-fg-dark, var(--ntn-pill-fg-light, #ffffff)) !important;
 }
 
 .theme-dark .ntn-pill {
-	background: var(--ntn-pill-bg-dark, #454B4E);
-	color: var(--ntn-pill-fg-dark, rgba(151,154,155,0.95));
+	background-color: var(--ntn-pill-bg-dark, var(--ntn-pill-bg-light, #454B4E)) !important;
+	color: var(--ntn-pill-fg-dark, var(--ntn-pill-fg-light, #ffffff)) !important;
+}
+
+.ntn-select-menu {
+	width: 380px !important;
+	max-width: 90vw !important;
+}
+
+.ntn-select-path-hint {
+	font-size: 11px;
+	color: var(--text-muted);
+	margin-left: 8px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: 1 1 auto;
+	min-width: 0;
 }
 
 /* ---------------- Group rows ---------------- */
@@ -776,3 +793,658 @@
    outside this plugin's view, so it ships as opt-in rather than being
    injected document-wide. See the README ("Optional: Notion-style
    toolbar"). */
+
+
+/* Notion Hierarchical Table Parent-Child Caret & Subcount Styles */
+.ntn-toggle-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border-radius: 3px;
+	cursor: pointer;
+	color: var(--ntn-text-muted);
+	user-select: none;
+	transition: background-color 0.15s ease, transform 0.15s ease;
+	margin-right: 4px;
+	flex-shrink: 0;
+}
+
+.ntn-toggle-btn:hover {
+	background-color: var(--ntn-hover);
+	color: var(--ntn-text);
+}
+
+.ntn-toggle-btn.expanded svg {
+	transform: rotate(90deg);
+}
+
+.ntn-subcount {
+	font-size: 11px;
+	color: var(--ntn-text-muted);
+	background-color: var(--ntn-hover);
+	padding: 1px 5px;
+	border-radius: 10px;
+	font-weight: 500;
+	margin-left: 6px;
+}
+
+.ntn-indent-spacer {
+	display: inline-block;
+	flex-shrink: 0;
+}
+
+/* Ensure inline color overrides outrank theme-dark defaults */
+.ntn-root .ntn-pill[style*="color"],
+.theme-dark .ntn-root .ntn-pill[style*="color"] {
+	color: inherit;
+}
+
+
+/* ---- Fixed Color Menu & Vibrant Preset Grid ---- */
+.ntn-color-menu {
+	position: fixed;
+	z-index: var(--layer-menu, 30);
+	background: var(--background-primary);
+	border-radius: 8px;
+	box-shadow: rgba(15, 15, 15, 0.1) 0 0 0 1px,
+		rgba(15, 15, 15, 0.15) 0 4px 12px,
+		rgba(15, 15, 15, 0.25) 0 12px 28px;
+	padding: 12px;
+	width: 280px !important;
+	min-width: 280px !important;
+	max-width: 320px !important;
+	max-height: 420px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.ntn-color-title {
+	font-weight: 600;
+	font-size: 12px;
+	color: var(--ntn-text-muted);
+	margin-bottom: 6px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.ntn-wheel-sec {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding-bottom: 10px;
+	margin-bottom: 10px;
+	border-bottom: 1px solid var(--ntn-border);
+}
+
+.ntn-fg-toggle-wrap {
+	display: flex;
+	gap: 6px;
+	width: 100%;
+	margin-top: 4px;
+}
+
+.ntn-fg-btn {
+	flex: 1;
+	padding: 5px 8px;
+	font-size: 12px;
+	border-radius: 4px;
+	border: 1px solid var(--ntn-border);
+	background: transparent;
+	color: var(--ntn-text);
+	cursor: pointer;
+}
+
+.ntn-fg-btn.active {
+	background: var(--interactive-accent, #2563eb);
+	color: #ffffff;
+	border-color: transparent;
+}
+
+.ntn-apply-color-btn {
+	width: 100%;
+	padding: 6px 12px;
+	font-size: 13px;
+	font-weight: 500;
+	border-radius: 5px;
+	border: none;
+	background: var(--interactive-accent, #2563eb);
+	color: #ffffff;
+	cursor: pointer;
+	margin-top: 4px;
+}
+
+.ntn-preset-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 6px;
+}
+
+.ntn-preset-pill {
+	cursor: pointer;
+	font-size: 12px;
+	padding: 4px 9px;
+	border-radius: 4px;
+	white-space: nowrap;
+	display: inline-block;
+}
+
+/* Resizer handle on each column header */
+.ntn-th-resizer {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: 6px;
+	cursor: col-resize;
+	user-select: none;
+	z-index: 2;
+}
+
+.ntn-th-resizer:hover,
+.ntn-th-resizer.resizing {
+	background-color: var(--interactive-accent, #2563eb);
+}
+
+
+.ntn-root .ntn-th {
+	position: relative !important;
+	min-width: 100px;
+}
+
+.ntn-col-resize-handle {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: 6px;
+	cursor: col-resize;
+	user-select: none;
+	z-index: 10;
+}
+
+.ntn-col-resize-handle:hover,
+.ntn-col-resize-handle.resizing {
+	background-color: var(--interactive-accent, #2563eb);
+}
+
+
+/* Centered Color Wheel & Preview Pill with vertical gap */
+.ntn-color-preview-wrap {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	margin: 10px 0 14px 0;
+	width: 100%;
+}
+
+.ntn-color-wheel-input {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	border: 2px solid var(--ntn-border);
+	cursor: pointer;
+	padding: 0;
+	background: transparent;
+}
+
+.ntn-select-dots {
+	margin-left: 6px;
+	cursor: pointer;
+	color: var(--ntn-text-muted);
+	font-size: 12px;
+	padding: 2px 4px;
+	border-radius: 3px;
+}
+
+.ntn-select-dots:hover {
+	background-color: var(--ntn-hover);
+	color: var(--ntn-text);
+}
+
+
+/* Centered Color Wheel & Preview Pill with 12px vertical gap */
+.ntn-color-preview-wrap {
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: center !important;
+	justify-content: center !important;
+	gap: 12px !important;
+	margin: 10px 0 14px 0 !important;
+	width: 100% !important;
+}
+
+.ntn-color-wheel-input {
+	display: block !important;
+	margin: 0 auto !important;
+	width: 38px !important;
+	height: 38px !important;
+	border-radius: 50% !important;
+	border: 2px solid var(--ntn-border) !important;
+	cursor: pointer !important;
+	padding: 0 !important;
+	background: transparent !important;
+	outline: none !important;
+}
+
+/* Strict 2-Column Grid Setup for Presets */
+.ntn-preset-grid {
+	display: grid !important;
+	grid-template-columns: repeat(2, 1fr) !important;
+	gap: 8px !important;
+	margin-top: 8px !important;
+	width: 100% !important;
+	box-sizing: border-box !important;
+}
+
+.ntn-preset-pill {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	text-align: center !important;
+	cursor: pointer !important;
+	font-size: 12px !important;
+	font-weight: 500 !important;
+	padding: 6px 8px !important;
+	border-radius: 5px !important;
+	white-space: nowrap !important;
+	width: 100% !important;
+	box-sizing: border-box !important;
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
+}
+
+
+/* ---- Obsidian Native Date & Time Picker Popover ---- */
+.ntn-native-picker-popover {
+	position: fixed;
+	z-index: var(--layer-menu, 1000);
+	background: var(--background-secondary, #222222);
+	border: 1px solid var(--ntn-border, #333333);
+	border-radius: 8px;
+	box-shadow: rgba(0, 0, 0, 0.4) 0 8px 24px;
+	display: flex;
+	color: var(--ntn-text, #dcddde);
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	user-select: none;
+	overflow: hidden;
+}
+
+/* Left Calendar Section */
+.ntn-picker-left {
+	padding: 12px;
+	width: 260px;
+	display: flex;
+	flex-direction: column;
+}
+
+.ntn-picker-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+
+.ntn-picker-month-year {
+	font-weight: 600;
+	font-size: 14px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--ntn-text);
+}
+
+.ntn-picker-nav-arrows {
+	display: flex;
+	gap: 6px;
+}
+
+.ntn-picker-arrow {
+	cursor: pointer;
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-size: 14px;
+	color: var(--ntn-text-muted);
+}
+
+.ntn-picker-arrow:hover {
+	background: var(--ntn-hover, rgba(255, 255, 255, 0.1));
+	color: var(--ntn-text);
+}
+
+/* 7-column Days Header */
+.ntn-picker-days-header {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	text-align: center;
+	font-size: 12px;
+	color: var(--ntn-text-muted);
+	margin-bottom: 8px;
+	font-weight: 500;
+}
+
+/* 7x6 Day Grid */
+.ntn-picker-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 4px;
+	text-align: center;
+
+}
+
+.ntn-picker-day {
+	height: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 13px;
+	color: var(--ntn-text);
+}
+
+.ntn-picker-day:hover {
+	background: var(--ntn-hover, rgba(255, 255, 255, 0.1));
+}
+
+.ntn-picker-day.other-month {
+	opacity: 0.35;
+}
+
+.ntn-picker-day.selected {
+	background: var(--interactive-accent, #3b82f6) !important;
+	color: #ffffff !important;
+	font-weight: 600;
+}
+
+/* Footer Buttons */
+.ntn-picker-footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 14px;
+	padding-top: 8px;
+	font-size: 13px;
+}
+
+.ntn-picker-clear-btn,
+.ntn-picker-today-btn {
+	cursor: pointer;
+	color: var(--interactive-accent, #3b82f6);
+	font-weight: 500;
+
+}
+
+.ntn-picker-clear-btn:hover,
+.ntn-picker-today-btn:hover {
+	text-decoration: underline;
+}
+
+/* Divider Line */
+.ntn-picker-divider {
+	width: 1px;
+	background: var(--ntn-border, #333333);
+}
+
+/* Right Time Section */
+.ntn-picker-right {
+	padding: 12px 10px;
+	display: flex;
+	gap: 8px;
+	background: var(--background-secondary-alt, #1a1a1a);
+}
+
+.ntn-time-col {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	height: 220px;
+	overflow-y: auto;
+	padding-right: 4px;
+	width: 44px;
+	scrollbar-width: thin;
+}
+
+.ntn-time-cell {
+	height: 28px;
+	min-height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 13px;
+	color: var(--ntn-text);
+}
+
+.ntn-time-cell:hover {
+	background: var(--ntn-hover, rgba(255, 255, 255, 0.1));
+}
+
+.ntn-time-cell.selected {
+	background: var(--interactive-accent, #3b82f6) !important;
+	color: #ffffff !important;
+	font-weight: 600;
+}
+
+
+/* Month & Year Fast Selector View Overlay */
+.ntn-picker-my-selector {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-top: 4px;
+}
+
+.ntn-my-title {
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--ntn-text-muted);
+	margin-bottom: 4px;
+	text-transform: uppercase;
+}
+
+.ntn-my-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 6px;
+	max-height: 100px;
+	overflow-y: auto;
+}
+
+.ntn-my-btn {
+	padding: 4px 6px;
+	font-size: 12px;
+	border-radius: 4px;
+	border: 1px solid var(--ntn-border, #333333);
+	background: transparent;
+	color: var(--ntn-text);
+	cursor: pointer;
+	text-align: center;
+}
+
+.ntn-my-btn:hover {
+	background: var(--ntn-hover, rgba(255, 255, 255, 0.1));
+}
+
+.ntn-my-btn.selected {
+	background: var(--interactive-accent, #3b82f6) !important;
+	color: #ffffff !important;
+	border-color: transparent !important;
+}
+
+
+/* Scrollable Year List (1970 - 2050) */
+.ntn-my-year-scroll {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 6px;
+	max-height: 120px;
+	overflow-y: auto;
+	padding-right: 4px;
+	scrollbar-width: thin;
+}
+
+.ntn-my-year-btn {
+	padding: 5px 6px;
+	font-size: 12px;
+	border-radius: 4px;
+	border: 1px solid var(--ntn-border, #333333);
+	background: transparent;
+	color: var(--ntn-text);
+	cursor: pointer;
+	text-align: center;
+}
+
+.ntn-my-year-btn:hover {
+	background: var(--ntn-hover, rgba(255, 255, 255, 0.1));
+}
+
+.ntn-my-year-btn.selected {
+	background: var(--interactive-accent, #3b82f6) !important;
+	color: #ffffff !important;
+	border-color: transparent !important;
+	font-weight: 600;
+}
+
+
+/* Picker Footer & OK Button */
+.ntn-picker-right-footer {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.ntn-picker-ok-btn {
+	padding: 3px 10px;
+	font-size: 12px;
+	font-weight: 600;
+	border-radius: 4px;
+	border: none;
+	background: var(--interactive-accent, #3b82f6);
+	color: #ffffff;
+	cursor: pointer;
+}
+
+.ntn-picker-ok-btn:hover {
+	opacity: 0.9;
+}
+
+/* Select Editor Folder Path Sub-label */
+.ntn-select-path-hint {
+	font-size: 11px;
+	color: var(--text-muted);
+	margin-left: 8px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 160px;
+}
+
+
+/* Select Option Rows: Pin 3-Dot Menu Button to Far Right Side */
+.ntn-select-option {
+	display: flex !important;
+	align-items: center !important;
+	gap: 6px !important;
+}
+
+.ntn-select-path-hint {
+	flex: 1 1 auto !important;
+	min-width: 0 !important;
+	margin-right: 8px !important;
+}
+
+.ntn-select-dots {
+	margin-left: auto !important;
+	flex-shrink: 0 !important;
+	padding: 2px 4px !important;
+	border-radius: 3px !important;
+	opacity: 0.7 !important;
+}
+
+.ntn-select-dots:hover {
+	opacity: 1 !important;
+	background: var(--ntn-hover) !important;
+}
+
+
+/* Column Drag and Drop Header Styling */
+.ntn-th[draggable="true"] {
+	cursor: grab;
+	user-select: none;
+}
+
+.ntn-th[draggable="true"]:active {
+	cursor: grabbing;
+}
+
+.ntn-th.ntn-dragging {
+	opacity: 0.45;
+	background: var(--ntn-hover) !important;
+}
+
+.ntn-th.ntn-drag-over {
+	border-left: 3px solid var(--interactive-accent) !important;
+	background: var(--ntn-hover) !important;
+}
+/* 12:14 AM Layout & Sorting Updates */
+.ntn-table {
+	table-layout: fixed !important;
+	width: max-content !important;
+	min-width: unset !important;
+	border-collapse: separate !important;
+	border-spacing: 0 !important;
+}
+
+.ntn-table thead {
+	position: sticky !important;
+	top: 0 !important;
+	z-index: 30 !important;
+	background: var(--background-primary) !important;
+}
+
+.ntn-th {
+	position: sticky !important;
+	top: 0 !important;
+	z-index: 30 !important;
+	background: var(--background-primary) !important;
+	box-shadow: 0 1px 0 var(--ntn-border) !important;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	box-sizing: border-box;
+}
+
+.ntn-td {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	box-sizing: border-box;
+}
+
+.ntn-th-sort-icon {
+	font-size: 10px;
+	color: var(--interactive-accent);
+	margin-left: 4px;
+	font-weight: bold;
+}
+
+/* Fix 1: Right padding gap for rightmost column resizing */
+.ntn-root {
+	padding-right: 200px !important;
+	padding-bottom: 50px !important;
+	box-sizing: border-box !important;
+	overflow: auto !important;
+	max-height: 100% !important;
+}
+
+/* Fix 2: Ensure table wrapper allows sticky headers to freeze against its top */
+.ntn-table {
+	margin-right: auto !important; /* Helps ensure padding-right on root is respected */
+}
