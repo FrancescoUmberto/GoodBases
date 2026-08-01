@@ -1,10 +1,9 @@
 {
-	"id": "good-bases",
-	"name": "GoodBases",
-	"version": "0.5.3",
-	"minAppVersion": "1.10.2",
-	"description": "A Bases table view styled to match Notion databases: hover UI, OPEN buttons, and colored tag pills.",
-	"author": "UmbertoFrancesco",
-	"fundingUrl": "https://buymeacoffee.com/umbertofrancesco",
+	"id": "very-goodbases",
+	"name": "Very GoodBases",
+	"version": "1.0.0",
+	"minAppVersion": "1.10.0",
+	"description": "Original GoodBases Enhanced",
+	"author": "UmbertoFrancesco (Enhanced by vishwasupponi)",
 	"isDesktopOnly": false
 }
