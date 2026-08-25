@@ -429,8 +429,8 @@ export class NotionTableView extends BasesView {
 		this.closeSelectMenu();
 		const prop = `note.${opts.propName}` as BasesPropertyId;
 		this.selectEditor = new SelectEditor({
-			doc: this.rootEl.doc,
 			win: this.rootEl.win,
+			container: opts.container ?? this.rootEl.doc.body,
 			anchor: opts.anchor,
 			entries: this.data.data,
 			file: opts.file,

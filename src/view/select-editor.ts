@@ -9,16 +9,28 @@
  * the editing entry's `file` at construction, never holding stale `BasesEntry`
  * objects, so it survives the view's `onDataUpdated` re-renders. The owning
  * view drives lifetime — outside-click and unload both call {@link close}.
+ *
+ * The menu mounts into `deps.container` (the document body for table cells,
+ * the modal container for the page panel) — see `SelectEditorDeps.container`.
  */
 import { BasesEntry, BasesPropertyId, TFile } from 'obsidian';
 import { NOTION_COLORS, applyColorVars } from '../lib/colors';
 import { valueToStrings } from '../lib/values';
 
 export interface SelectEditorDeps {
-	/** The view's own document (popout-safe; never bare `document`). */
-	doc: Document;
 	/** The view's own window (popout-safe), used to clamp the menu on screen. */
 	win: Window;
+	/**
+	 * Element the menu (and its color flyout) is appended to — normally the
+	 * document body, but the page panel passes its modal container: Obsidian
+	 * traps focus inside the open modal's `containerEl`
+	 * (`Scope.setTabFocusContainerEl` + `Keymap.onFocusIn`), so a menu on the
+	 * body would lose the search input's focus to the modal's first focusable
+	 * element (the title) one tick after opening. Doubles as the scope for
+	 * {@link SelectEditor.reanchorIfMatches}, so a table re-render can't steal
+	 * the anchor of a menu opened from the panel.
+	 */
+	container: HTMLElement;
 	/** Cell element the menu anchors beneath. */
 	anchor: HTMLElement;
 	/** Every entry in the current result, used to list the known values. */
@@ -94,6 +106,9 @@ export class SelectEditor {
 	reanchorIfMatches(td: HTMLElement, filePath: string, prop: BasesPropertyId): boolean {
 		if (this.closed) return false;
 		if (this.deps.prop !== prop || this.deps.file.path !== filePath) return false;
+		// Only elements from the same surface the menu belongs to: a table
+		// re-render must not re-point a menu opened from the page panel.
+		if (!this.deps.container.contains(td)) return false;
 		this.deps.anchor = td;
 		return true;
 	}
@@ -113,8 +128,8 @@ export class SelectEditor {
 	}
 
 	private build(): HTMLElement {
-		const { doc, isList } = this.deps;
-		const menu = doc.body.createDiv({ cls: 'ntn-root ntn-select-menu' });
+		const { container, isList } = this.deps;
+		const menu = container.createDiv({ cls: 'ntn-root ntn-select-menu' });
 
 		const currentEl = menu.createDiv({ cls: 'ntn-select-current' });
 		this.pillsWrap = currentEl.createDiv({ cls: 'ntn-select-pills' });
@@ -255,7 +270,7 @@ export class SelectEditor {
 	/** Open the color picker for a value, anchored to its row button. */
 	private openColorMenu(anchorEl: HTMLElement, value: string): void {
 		this.closeColorMenu();
-		const menu = this.deps.doc.body.createDiv({ cls: 'ntn-root ntn-color-menu' });
+		const menu = this.deps.container.createDiv({ cls: 'ntn-root ntn-color-menu' });
 		this.colorMenu = menu;
 
 		for (const c of NOTION_COLORS) {

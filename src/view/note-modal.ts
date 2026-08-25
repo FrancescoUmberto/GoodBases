@@ -28,6 +28,13 @@ import { splitFrontmatter } from '../lib/frontmatter';
 export interface OpenSelectOpts {
 	/** Element the menu anchors beneath (also drives click-to-toggle). */
 	anchor: HTMLElement;
+	/**
+	 * Where the menu is mounted. Defaults to the view's document body; the
+	 * page panel passes its modal container so Obsidian's modal focus trap
+	 * doesn't yank focus out of the menu's search input (see
+	 * `SelectEditorDeps.container`).
+	 */
+	container?: HTMLElement;
 	file: TFile;
 	/** Bare frontmatter property name (no `note.` prefix). */
 	propName: string;
@@ -257,6 +264,7 @@ export class NotePageModal extends Modal {
 				valueEl.addEventListener('click', () => {
 					this.deps.openSelect({
 						anchor: valueEl,
+						container: this.containerEl,
 						file: this.file,
 						propName: key,
 						current: items,
