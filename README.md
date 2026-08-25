@@ -160,6 +160,15 @@ want to nudge one up the list?
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
 
+### 0.5.4
+
+- **Fixed:** in the page panel, editing a pill property was impossible —
+  opening the select menu bounced the cursor back to the page title, so
+  you couldn't search for or type a new value. The menu now opens inside
+  the panel, where Obsidian's modal focus handling leaves it alone.
+- **Fixed:** clicking the same property row again now reliably closes its
+  select menu, even after a change re-renders the table behind the panel.
+
 ### 0.5.3
 
 - **Changed:** addressed the community plugin review feedback — inline
