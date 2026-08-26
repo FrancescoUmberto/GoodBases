@@ -46,10 +46,14 @@ centered Notion-style panel:
   Colors are assigned by a deterministic hash, so a value keeps its color
   forever — unless you choose your own.
 - **Per-value color picker** — click the colored square next to any value
-  in the pill select menu and pick a color from Notion's palette. Your
-  choice is saved and applies everywhere that value appears. (You can also
-  set colors in bulk with the *Pinned pill colors* view option —
-  `value=color`, e.g. `Done=green`.)
+  in the pill select menu and pick one of Notion's colors, or **any color
+  you like**: the *Custom* row at the top of the picker opens your
+  system's color dialog and takes a typed hex (`#0088ff`). Custom colors
+  are used as-is in both light and dark mode; the pill's text color is
+  chosen automatically so it stays readable. Your choice is saved and
+  applies everywhere that value appears. (You can also set colors in bulk
+  with the *Pinned pill colors* view option — `value=color`, e.g.
+  `Done=green` or `Done=#0088ff`.)
 - **Inline editing** — click a cell to edit text and numbers in a
   floating input; checkboxes toggle in place. Pill cells open a
   select-style menu listing every value already used for that property,
@@ -146,6 +150,8 @@ want to nudge one up the list?
 - ✅ **Page panel** (0.5) — create and open notes in a centered
   Notion-style panel: editable title and properties, body rendered as
   formatted Markdown, and an *Open notes in* option for the OPEN button.
+- ✅ **Custom pill colors** (0.6) — pick any color for a value, not just
+  Notion's nine: the system color dialog or a typed hex, saved per value.
 - 🔵 **Column resizing** (next) — drag handles on column borders, with
   widths persisted per view.
 - 🔵 **Calculated footers** (next) — a Notion-style per-column
@@ -159,6 +165,28 @@ want to nudge one up the list?
 
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
+
+### 0.6.0
+
+**🎨 New — custom pill colors.** The color picker is no longer limited to
+Notion's nine colors. Click the colored square next to any value in the
+pill select menu and use the new **Custom** row at the top: open your
+system's color dialog, or type a hex (`#0088ff`). Your pick is saved to
+that value and applies everywhere it appears, exactly like a palette
+color.
+
+![Picking a custom pill color from the select menu](docs/asset/custom_color_picker.gif)
+
+- **Added:** a custom color row in the pill color picker — the native
+  color dialog plus a hex field (`#rgb` and `#rrggbb`, with or without
+  the `#`).
+- **Added:** the *Pinned pill colors* view option now takes hex values
+  too, so you can set them in bulk — `Done=#0088ff` alongside
+  `Done=green`.
+- **Changed:** a custom color is used exactly as you picked it in both
+  light and dark mode; the pill's text color is derived automatically
+  (contrast-checked) so the label always stays readable. Notion's nine
+  palette colors keep their separate light/dark values.
 
 ### 0.5.4
 

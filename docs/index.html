@@ -60,7 +60,8 @@
 				<p>Tags and list properties render with Notion's 9-color
 				palette. A deterministic hash keeps each value's color stable
 				forever — or recolor any value yourself with the built-in
-				color picker.</p>
+				color picker: Notion's palette, or any custom color you
+				pick.</p>
 			</div>
 			<div class="card">
 				<span class="pill yellow">Editing</span>
@@ -137,6 +138,13 @@
 						Markdown — plus an “Open notes in” option for the OPEN
 						button.</p>
 				</li>
+				<li class="done">
+					<div class="head"><strong>Custom pill colors</strong>
+						<span class="marker done">0.6 · shipped</span></div>
+					<p>Pick any color for a value, not just Notion's nine — the
+						system color dialog or a typed hex, saved per value and used
+						everywhere it appears.</p>
+				</li>
 				<li class="next">
 					<div class="head"><strong>Column resizing</strong>
 						<span class="marker next">Next up</span></div>
@@ -176,8 +184,35 @@
 
 			<details class="release" open>
 				<summary>
-					<span class="ver">0.5.4</span>
+					<span class="ver">0.6.0</span>
 					<span class="tag">Latest</span>
+					<span class="tag major">Major</span>
+				</summary>
+				<div class="body">
+					<p class="headline">🎨 <strong>New — custom pill colors.</strong>
+						The color picker is no longer limited to Notion's nine colors:
+						the new <strong>Custom</strong> row at the top of the picker
+						opens your system's color dialog, or takes a typed hex. Your
+						pick is saved to that value and applies everywhere it appears.</p>
+					<img class="shot" src="asset/custom_color_picker.gif" alt="Picking a custom pill color from the select menu">
+					<p>Also in this release:</p>
+					<ul>
+						<li>The “Pinned pill colors” view option now takes hex values
+							too, so you can set them in bulk —
+							<code>Done=#0088ff</code> alongside
+							<code>Done=green</code>.</li>
+						<li>A custom color is used exactly as you picked it in both
+							light and dark mode; the pill's text color is derived
+							automatically (contrast-checked) so the label always stays
+							readable. Notion's nine palette colors keep their separate
+							light and dark values.</li>
+					</ul>
+				</div>
+			</details>
+
+			<details class="release">
+				<summary>
+					<span class="ver">0.5.4</span>
 				</summary>
 				<div class="body">
 					<ul>

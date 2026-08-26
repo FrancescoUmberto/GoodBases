@@ -12,3 +12,4 @@ node_modules/
 
 # local env (per-machine vault path for build deploy); .env.example is tracked
 .env
+proj/
