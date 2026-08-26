@@ -15,7 +15,7 @@ import {
 	TFile,
 } from 'obsidian';
 import { LOG_PREFIX, NOTION_TABLE_VIEW } from '../constants';
-import { PinnedColors, applyPillColor, colorByName } from '../lib/colors';
+import { PinnedColors, applyPillColor, parseColorSpec } from '../lib/colors';
 import { PillDetection, computePillProps, parsePinnedColors } from '../lib/pills';
 import { valueToStrings } from '../lib/values';
 import { NotePageModal, OpenSelectOpts } from './note-modal';
@@ -441,19 +441,21 @@ export class NotionTableView extends BasesView {
 			write: (value) =>
 				void this.writeProperty(opts.file, opts.propName, value)
 					.then(() => opts.onWrite?.()),
-			setColor: (value, colorName) => this.setPinnedColor(value, colorName),
+			setColor: (value, color) => this.setPinnedColor(value, color),
 			onClose: () => { this.selectEditor = null; },
 		});
 	}
 
 	/**
-	 * Pin a value to a specific Notion color. Updates the live map for instant
-	 * feedback in the open editor, then persists into the `pinnedColors` view
-	 * option (replacing any prior entry for the same value) so it survives
-	 * reloads and is editable from the view settings too.
+	 * Pin a value to a color — a Notion palette name or any custom hex. Updates
+	 * the live map for instant feedback in the open editor, then persists into
+	 * the `pinnedColors` view option (replacing any prior entry for the same
+	 * value) so it survives reloads and is editable from the view settings too.
+	 * The stored spec is the resolved color's canonical name (`green`, or a
+	 * normalized `#rrggbb`).
 	 */
-	private setPinnedColor(value: string, colorName: string): void {
-		const color = colorByName(colorName);
+	private setPinnedColor(value: string, spec: string): void {
+		const color = parseColorSpec(spec);
 		if (!color) return;
 		const bare = value.replace(/^#/, '');
 		const key = bare.toLowerCase();
@@ -465,7 +467,7 @@ export class NotionTableView extends BasesView {
 			const m = item.match(/^(.+?)\s*[=:]\s*(.+)$/);
 			return m ? m[1].trim().replace(/^#/, '').toLowerCase() !== key : true;
 		});
-		kept.push(`${bare}=${colorName}`);
+		kept.push(`${bare}=${color.name}`);
 		this.config.set('pinnedColors', kept);
 	}
 

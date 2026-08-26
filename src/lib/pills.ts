@@ -4,7 +4,7 @@
  * `pinnedColors` view option into a {@link PinnedColors} map.
  */
 import { App, BasesEntry, BasesPropertyId, BasesViewConfig, ListValue } from 'obsidian';
-import { PinnedColors, colorByName } from './colors';
+import { PinnedColors, parseColorSpec } from './colors';
 
 /** Result of {@link computePillProps}. */
 export interface PillDetection {
@@ -83,7 +83,10 @@ export function computePillProps(
 	return { pillProps, listProps };
 }
 
-/** Parse the `pinnedColors` view option (`value=color` entries) into a map. */
+/**
+ * Parse the `pinnedColors` view option (`value=color` entries) into a map. The
+ * color is either a Notion palette name (`green`) or a custom hex (`#0088ff`).
+ */
 export function parsePinnedColors(raw: unknown): PinnedColors {
 	const pinned: PinnedColors = new Map();
 	if (!Array.isArray(raw)) return pinned;
@@ -91,8 +94,7 @@ export function parsePinnedColors(raw: unknown): PinnedColors {
 		const m = String(item).match(/^(.+?)\s*[=:]\s*(.+)$/);
 		if (!m) continue;
 		const value = m[1].trim().replace(/^#/, '').toLowerCase();
-		const colorName = m[2].trim().toLowerCase();
-		const color = colorByName(colorName);
+		const color = parseColorSpec(m[2]);
 		if (value && color) pinned.set(value, color);
 	}
 	return pinned;

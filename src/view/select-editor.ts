@@ -14,7 +14,7 @@
  * the modal container for the page panel) — see `SelectEditorDeps.container`.
  */
 import { BasesEntry, BasesPropertyId, TFile } from 'obsidian';
-import { NOTION_COLORS, applyColorVars } from '../lib/colors';
+import { NOTION_COLORS, applyColorVars, customColor } from '../lib/colors';
 import { valueToStrings } from '../lib/values';
 
 export interface SelectEditorDeps {
@@ -47,8 +47,11 @@ export interface SelectEditorDeps {
 	applyColor: (pill: HTMLElement, text: string) => void;
 	/** Persist the chosen value (`null` deletes the property). */
 	write: (value: unknown) => void;
-	/** Pin a value to a specific Notion color name (e.g. `"green"`). */
-	setColor: (value: string, colorName: string) => void;
+	/**
+	 * Pin a value to a color spec: a Notion palette name (e.g. `"green"`) or a
+	 * custom hex (e.g. `"#0088ff"`).
+	 */
+	setColor: (value: string, color: string) => void;
 	/** Invoked once when the menu closes, so the owner can drop its reference. */
 	onClose: () => void;
 }
@@ -273,6 +276,17 @@ export class SelectEditor {
 		const menu = this.deps.container.createDiv({ cls: 'ntn-root ntn-color-menu' });
 		this.colorMenu = menu;
 
+		const apply = (spec: string) => {
+			this.deps.setColor(value, spec);
+			// Live map is updated synchronously, so re-rendering shows the
+			// new color immediately (renderOptions also closes this flyout).
+			this.renderPills();
+			this.renderOptions();
+		};
+
+		this.buildCustomColorSection(menu, anchorEl, apply);
+		menu.createDiv({ cls: 'ntn-color-section', text: 'Notion colors' });
+
 		for (const c of NOTION_COLORS) {
 			const item = menu.createDiv({ cls: 'ntn-color-option' });
 			const swatch = item.createSpan({ cls: 'ntn-color-swatch' });
@@ -280,15 +294,66 @@ export class SelectEditor {
 			item.createSpan({ cls: 'ntn-color-name', text: c.name });
 			item.addEventListener('click', (evt) => {
 				evt.stopPropagation();
-				this.deps.setColor(value, c.name);
-				// Live map is updated synchronously, so re-rendering shows the
-				// new color immediately (renderOptions also closes this flyout).
-				this.renderPills();
-				this.renderOptions();
+				apply(c.name);
 			});
 		}
 
 		this.clampToWindow(menu, anchorEl.getBoundingClientRect());
+	}
+
+	/**
+	 * The "any color you like" half of the picker: the OS color dialog plus a
+	 * hex field, both committing a `#rrggbb` spec. Seeded with the value's
+	 * current color, read back from the CSS variables `applyColor` just set on
+	 * the row's swatch (they hold a plain hex for every palette entry).
+	 */
+	private buildCustomColorSection(
+		menu: HTMLElement,
+		anchorEl: HTMLElement,
+		apply: (spec: string) => void,
+	): void {
+		const currentBg = anchorEl.style.getPropertyValue('--ntn-pill-bg-light').trim();
+		const seed = /^#[0-9a-f]{6}$/i.test(currentBg) ? currentBg : '#cccccc';
+
+		menu.createDiv({ cls: 'ntn-color-section', text: 'Custom' });
+		const row = menu.createDiv({ cls: 'ntn-color-custom' });
+
+		const picker = row.createEl('input', {
+			type: 'color',
+			cls: 'ntn-color-input',
+			attr: { 'aria-label': 'Pick a custom color' },
+		});
+		picker.value = seed;
+		// `change` (not `input`) fires once the dialog is committed, so dragging
+		// through the picker doesn't write the view config on every frame.
+		picker.addEventListener('change', () => apply(picker.value));
+		picker.addEventListener('click', (evt) => evt.stopPropagation());
+
+		const hex = row.createEl('input', {
+			type: 'text',
+			cls: 'ntn-color-hex',
+			attr: { placeholder: seed, spellcheck: 'false', 'aria-label': 'Custom color hex' },
+		});
+		const commitHex = () => {
+			const spec = hex.value.trim();
+			if (!spec) return;
+			if (customColor(spec)) apply(spec);
+			else hex.addClass('ntn-color-hex-invalid');
+		};
+		hex.addEventListener('input', () => hex.removeClass('ntn-color-hex-invalid'));
+		hex.addEventListener('click', (evt) => evt.stopPropagation());
+		hex.addEventListener('keydown', (evt) => {
+			if (evt.key === 'Enter') {
+				evt.preventDefault();
+				commitHex();
+			} else if (evt.key === 'Escape') {
+				// Consume it: bubbling would close the whole select editor (and,
+				// inside the page panel, the modal too).
+				evt.preventDefault();
+				evt.stopPropagation();
+				this.closeColorMenu();
+			}
+		});
 	}
 
 	/** Anchor the main menu below the cell, then clamp into the window. */

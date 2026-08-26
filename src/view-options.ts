@@ -37,7 +37,7 @@ export function buildViewOptions(_config: BasesViewConfig): BasesAllOptions[] {
 		{
 			type: 'multitext',
 			key: 'pinnedColors',
-			displayName: 'Pinned pill colors (value=color: gray, brown, orange, yellow, green, blue, purple, pink, red)',
+			displayName: 'Pinned pill colors (value=color — a name: gray, brown, orange, yellow, green, blue, purple, pink, red — or a hex like #0088ff)',
 		},
 	];
 }

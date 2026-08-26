@@ -48,6 +48,109 @@ export function colorByName(name: string): NotionColor | undefined {
 	return NOTION_COLORS.find((c) => c.name === name);
 }
 
+interface RGB {
+	r: number;
+	g: number;
+	b: number;
+}
+
+/** Parse `#rgb` / `#rrggbb` (the `#` optional); undefined when it isn't a hex. */
+function parseHex(spec: string): RGB | undefined {
+	const m = spec.trim().replace(/^#/, '');
+	if (!/^([0-9a-f]{3}|[0-9a-f]{6})$/i.test(m)) return undefined;
+	const full = m.length === 3 ? m.split('').map((c) => c + c).join('') : m;
+	return {
+		r: parseInt(full.slice(0, 2), 16),
+		g: parseInt(full.slice(2, 4), 16),
+		b: parseInt(full.slice(4, 6), 16),
+	};
+}
+
+function rgbToHex({ r, g, b }: RGB): string {
+	const hex = (n: number) => Math.round(n).toString(16).padStart(2, '0');
+	return `#${hex(r)}${hex(g)}${hex(b)}`;
+}
+
+/** Hue in [0,360), saturation and lightness in [0,1]. */
+function rgbToHsl({ r, g, b }: RGB): { h: number; s: number; l: number } {
+	const rn = r / 255, gn = g / 255, bn = b / 255;
+	const max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn);
+	const l = (max + min) / 2;
+	const d = max - min;
+	if (!d) return { h: 0, s: 0, l };
+	const s = d / (1 - Math.abs(2 * l - 1));
+	let h: number;
+	if (max === rn) h = ((gn - bn) / d) % 6;
+	else if (max === gn) h = (bn - rn) / d + 2;
+	else h = (rn - gn) / d + 4;
+	return { h: (h * 60 + 360) % 360, s, l };
+}
+
+function hslToRgb(h: number, s: number, l: number): RGB {
+	const c = (1 - Math.abs(2 * l - 1)) * s;
+	const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+	const m = l - c / 2;
+	const [r, g, b] =
+		h < 60 ? [c, x, 0] :
+		h < 120 ? [x, c, 0] :
+		h < 180 ? [0, c, x] :
+		h < 240 ? [0, x, c] :
+		h < 300 ? [x, 0, c] :
+		[c, 0, x];
+	return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
+}
+
+/** WCAG relative luminance. */
+function luminance({ r, g, b }: RGB): number {
+	const lin = (v: number) => {
+		const s = v / 255;
+		return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+	};
+	return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+/** WCAG contrast ratio between two colors (1–21). */
+function contrast(a: RGB, b: RGB): number {
+	const la = luminance(a), lb = luminance(b);
+	return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+/**
+ * Pick readable pill text for an arbitrary background: a same-hue tint (very
+ * dark or very light, whichever side has more room) when it clears the WCAG AA
+ * 4.5:1 bar, otherwise plain near-black / white. Keeps custom pills looking
+ * like Notion's tinted-text palette without ever going unreadable.
+ */
+function readableOn(bg: RGB): string {
+	const goDark = contrast(bg, { r: 0, g: 0, b: 0 }) >= contrast(bg, { r: 255, g: 255, b: 255 });
+	const { h, s } = rgbToHsl(bg);
+	const tinted = hslToRgb(h, Math.min(s, 0.85), goDark ? 0.2 : 0.94);
+	if (contrast(bg, tinted) >= 4.5) return rgbToHex(tinted);
+	return goDark ? '#1A1A1A' : '#FFFFFF';
+}
+
+/**
+ * Build a palette entry from any hex color the user picked. The chosen color is
+ * the pill background in BOTH themes (what you pick is what you get); only the
+ * text color is derived, for contrast.
+ */
+export function customColor(spec: string): NotionColor | undefined {
+	const rgb = parseHex(spec);
+	if (!rgb) return undefined;
+	const bg = rgbToHex(rgb);
+	const fg = readableOn(rgb);
+	return { name: bg, lightBg: bg, lightFg: fg, darkBg: bg, darkFg: fg };
+}
+
+/**
+ * Resolve a color spec as written by the user: one of the nine Notion names
+ * (`green`) or a custom hex (`#0088ff`, `0088ff`, `#08f`).
+ */
+export function parseColorSpec(spec: string): NotionColor | undefined {
+	const s = spec.trim();
+	return colorByName(s.toLowerCase()) ?? customColor(s);
+}
+
 /** Normalize a pill value for color lookup: drop a leading `#`, lowercase. */
 function colorKey(text: string): string {
 	return text.replace(/^#/, '').toLowerCase();
