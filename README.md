@@ -68,9 +68,12 @@ centered Notion-style panel:
 - **Choose what OPEN does** — the *Open notes in* view option points the
   hover OPEN button at a new tab (default) or at the page panel.
 - **Grouping support** — respects the Bases `group by` configuration.
+- **Choose the Name column icon** — keep Notion's page emoji, switch to
+  Obsidian's own file icon so it takes your theme's color, name any emoji
+  or [Lucide](https://lucide.dev) icon you like, or hide it entirely.
 - **View options** — wrap cell content (on by default), toggle vertical
-  lines, choose how OPEN opens notes, force specific properties to
-  render as pills, and pin pill colors.
+  lines, choose how OPEN opens notes, pick the Name column icon, force
+  specific properties to render as pills, and pin pill colors.
 
 ## Usage
 
@@ -168,6 +171,25 @@ want to nudge one up the list?
 
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
+
+### 0.7.1
+
+**🎨 New — choose the Name column icon.** The page icon is no longer a
+fixed glyph. The new *Name column icon* view option keeps it as the
+default, switches to Obsidian's own file icon so it takes your theme's
+color, accepts any emoji or [Lucide](https://lucide.dev) icon name you
+type, or hides it entirely.
+
+- **Added:** a *Name column icon* dropdown — page icon (default),
+  Obsidian's file icon, custom, or hidden — with a companion text field
+  for the custom emoji or Lucide icon name.
+- **Changed:** *Hidden* also removes the `Aa` glyph from the column
+  header, leaving the Name column completely clean.
+- **Changed:** an emoji you choose keeps its own colors; the default page
+  icon stays desaturated as before.
+
+Thanks to the community for reporting that the fixed icon could clash
+with custom themes.
 
 ### 0.7.0
 
