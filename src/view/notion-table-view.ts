@@ -15,6 +15,13 @@ import {
 	TFile,
 } from 'obsidian';
 import { LOG_PREFIX, NOTION_TABLE_VIEW } from '../constants';
+import {
+	ColumnWidths,
+	MIN_COLUMN_WIDTH,
+	TITLE_COLUMN_KEY,
+	parseColumnWidths,
+	serializeColumnWidths,
+} from '../lib/column-widths';
 import { PinnedColors, applyPillColor, parseColorSpec } from '../lib/colors';
 import { PillDetection, computePillProps, parsePinnedColors } from '../lib/pills';
 import { valueToStrings } from '../lib/values';
@@ -41,6 +48,8 @@ export class NotionTableView extends BasesView {
 	private pills: PillDetection = { pillProps: new Set(), listProps: new Set() };
 	/** User-pinned value → color overrides from the `pinnedColors` view option. */
 	private pinnedColors: PinnedColors = new Map();
+	/** Column key → user-dragged width; unlisted columns size themselves. */
+	private columnWidths: ColumnWidths = new Map();
 	/** The open select editor, if any (also drives outside-click detection). */
 	private selectEditor: SelectEditor | null = null;
 
@@ -80,6 +89,7 @@ export class NotionTableView extends BasesView {
 		const props = this.config.getOrder();
 		this.pills = computePillProps(props, this.data.data, this.config, this.app);
 		this.pinnedColors = parsePinnedColors(this.config.get('pinnedColors'));
+		this.columnWidths = parseColumnWidths(this.config.get('columnWidths'));
 
 		const table = root.createEl('table', { cls: 'ntn-table' });
 
@@ -89,10 +99,13 @@ export class NotionTableView extends BasesView {
 		const thTitle = headRow.createEl('th', { cls: 'ntn-th ntn-col-title' });
 		thTitle.createSpan({ cls: 'ntn-th-icon', text: 'Aa' });
 		thTitle.createSpan({ text: 'Name' });
-		for (const prop of props) {
+		this.setupColumn(thTitle, TITLE_COLUMN_KEY, 0);
+		props.forEach((prop, i) => {
 			const th = headRow.createEl('th', { cls: 'ntn-th' });
 			th.createSpan({ text: this.config.getDisplayName(prop) });
-		}
+			// The title column occupies index 0, so property i sits at i + 1.
+			this.setupColumn(th, prop, i + 1);
+		});
 
 		// ---- Body (group-aware) ----
 		const tbody = table.createEl('tbody');
@@ -128,6 +141,7 @@ export class NotionTableView extends BasesView {
 
 		// Title cell: page icon + name + hover OPEN button
 		const titleTd = tr.createEl('td', { cls: 'ntn-td ntn-col-title' });
+		this.applyColumnWidth(titleTd, TITLE_COLUMN_KEY);
 		const titleWrap = titleTd.createDiv({ cls: 'ntn-title-wrap' });
 		titleWrap.createSpan({ cls: 'ntn-page-icon', text: '📄' });
 		const link = titleWrap.createSpan({
@@ -153,8 +167,109 @@ export class NotionTableView extends BasesView {
 
 		for (const prop of props) {
 			const td = tr.createEl('td', { cls: 'ntn-td' });
+			this.applyColumnWidth(td, prop);
 			this.renderCell(td, entry, prop);
 		}
+	}
+
+	/**
+	 * Pin a cell to its column's dragged width. A column's width is the max
+	 * over all its cells, so the constraint has to land on every `th`/`td` of
+	 * the column, not just the header. `min-width` is part of it because the
+	 * stylesheet pins the title column at 280px, and `max-width` because the
+	 * table stays in `table-layout: auto` (switching to `fixed` would undo the
+	 * `width: max-content` narrow-container fix — see bug history #4).
+	 */
+	private applyColumnWidth(cell: HTMLElement, key: string): void {
+		const width = this.columnWidths.get(key);
+		if (width === undefined) return;
+		const px = `${width}px`;
+		cell.setCssStyles({ width: px, minWidth: px, maxWidth: px });
+	}
+
+	/** Apply a header cell's stored width and give it a drag-to-resize handle. */
+	private setupColumn(th: HTMLElement, key: string, colIndex: number): void {
+		this.applyColumnWidth(th, key);
+		const handle = th.createDiv({ cls: 'ntn-col-resize' });
+
+		handle.addEventListener('pointerdown', (evt: PointerEvent) => {
+			// Keep the press off the header itself (and out of any text selection).
+			evt.preventDefault();
+			evt.stopPropagation();
+			const startX = evt.clientX;
+			const startWidth = th.getBoundingClientRect().width;
+			const cells = this.columnCells(th, colIndex);
+			let width = startWidth;
+			// A click that never moves must not pin the column at its current
+			// width — and must not write to the config, whose re-render would
+			// replace this handle before the double-click reset could fire.
+			let moved = false;
+
+			// Capturing on the handle routes the rest of the gesture here, so
+			// there are no document-level listeners to unregister on unload.
+			handle.setPointerCapture(evt.pointerId);
+			handle.addClass('ntn-col-resize-active');
+			this.rootEl.addClass('ntn-resizing');
+
+			const onMove = (e: PointerEvent) => {
+				if (e.clientX === startX) return;
+				moved = true;
+				// No upper bound: a column may outgrow the pane and push the
+				// table into .ntn-root's horizontal scroll, like Notion.
+				width = Math.max(MIN_COLUMN_WIDTH, startWidth + e.clientX - startX);
+				const px = `${Math.round(width)}px`;
+				// Resize live off the DOM; the config write (and the re-render
+				// it triggers) waits until the drag ends.
+				for (const cell of cells) {
+					cell.setCssStyles({ width: px, minWidth: px, maxWidth: px });
+				}
+			};
+			const onEnd = () => {
+				handle.removeEventListener('pointermove', onMove);
+				handle.removeEventListener('pointerup', onEnd);
+				handle.removeEventListener('pointercancel', onEnd);
+				handle.removeClass('ntn-col-resize-active');
+				this.rootEl.removeClass('ntn-resizing');
+				if (moved) this.saveColumnWidth(key, Math.round(width));
+			};
+			handle.addEventListener('pointermove', onMove);
+			handle.addEventListener('pointerup', onEnd);
+			handle.addEventListener('pointercancel', onEnd);
+		});
+
+		// Notion's reset gesture: double-click a handle to size to content.
+		handle.addEventListener('dblclick', (evt) => {
+			evt.preventDefault();
+			evt.stopPropagation();
+			this.saveColumnWidth(key, null);
+			// Re-render to drop the inline widths this column's cells carry.
+			this.onDataUpdated();
+		});
+	}
+
+	/**
+	 * Every `td` of one column, plus its header. Group rows hold a single
+	 * `colspan` cell, so only `.ntn-row`s carry a td at this index.
+	 */
+	private columnCells(th: HTMLElement, colIndex: number): HTMLElement[] {
+		const cells: HTMLElement[] = [th];
+		const table = th.closest('table');
+		if (!table) return cells;
+		const tds = table.querySelectorAll<HTMLElement>(
+			`tr.ntn-row > td:nth-child(${colIndex + 1})`,
+		);
+		tds.forEach((td) => cells.push(td));
+		return cells;
+	}
+
+	/** Persist (or clear, with `null`) one column's width in the view config. */
+	private saveColumnWidth(key: string, width: number | null): void {
+		if (width === null) {
+			this.columnWidths.delete(key);
+		} else {
+			this.columnWidths.set(key, width);
+		}
+		this.config.set('columnWidths', serializeColumnWidths(this.columnWidths));
 	}
 
 	private renderCell(td: HTMLElement, entry: BasesEntry, prop: BasesPropertyId): void {

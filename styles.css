@@ -9,6 +9,8 @@
 	--ntn-border: rgb(233, 233, 231);
 	--ntn-hover: rgba(55, 53, 47, 0.04);
 	--ntn-active: rgba(55, 53, 47, 0.08);
+	/* Notion's blue accent — the column resize line. */
+	--ntn-accent: rgb(35, 131, 226);
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
 		Arial, sans-serif;
 	font-size: 14px;
@@ -56,6 +58,8 @@
 	vertical-align: middle;
 	padding: 0 8px;
 	height: 34px;
+	/* Anchors the absolutely positioned .ntn-col-resize handle. */
+	position: relative;
 	border-bottom: 1px solid var(--ntn-border);
 	-webkit-user-select: none;
 	user-select: none;
@@ -156,6 +160,50 @@
 
 .ntn-row:hover {
 	background: var(--ntn-hover);
+}
+
+/* ---------------- Column resizing ---------------- */
+
+/* A hit area straddling the header's right edge. Widths themselves are set
+   inline (per column, on every th/td) by the view — see applyColumnWidth. */
+.ntn-col-resize {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	right: -3px;
+	width: 6px;
+	z-index: 1;
+	cursor: col-resize;
+	/* Keep the drag a drag: no text selection, no touch scrolling. */
+	-webkit-user-select: none;
+	user-select: none;
+	touch-action: none;
+}
+
+/* Notion's blue line, revealed on hover and held while dragging. */
+.ntn-col-resize::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 2px;
+	width: 2px;
+	background: var(--ntn-accent);
+	opacity: 0;
+	transition: opacity 20ms ease-in;
+}
+
+.ntn-col-resize:hover::after,
+.ntn-col-resize-active::after {
+	opacity: 1;
+}
+
+/* While dragging, the cursor stays col-resize wherever the pointer goes. */
+.ntn-resizing,
+.ntn-resizing * {
+	cursor: col-resize;
+	-webkit-user-select: none;
+	user-select: none;
 }
 
 /* ---------------- Title column ---------------- */
