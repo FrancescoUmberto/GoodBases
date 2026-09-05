@@ -30,6 +30,23 @@ export function buildViewOptions(_config: BasesViewConfig): BasesAllOptions[] {
 			},
 		},
 		{
+			type: 'dropdown',
+			key: 'titleIcon',
+			displayName: 'Name column icon',
+			default: 'page',
+			options: {
+				page: 'Page icon 📄',
+				theme: "Obsidian's file icon",
+				custom: 'Custom (set below)',
+				none: 'Hidden',
+			},
+		},
+		{
+			type: 'text',
+			key: 'titleIconCustom',
+			displayName: 'Custom Name column icon — an emoji, or a Lucide icon name like file-text',
+		},
+		{
 			type: 'multitext',
 			key: 'pillProperties',
 			displayName: 'Properties to show as colored pills',

@@ -13,6 +13,7 @@ import {
 	Platform,
 	QueryController,
 	TFile,
+	setIcon,
 } from 'obsidian';
 import { LOG_PREFIX, NOTION_TABLE_VIEW } from '../constants';
 import {
@@ -50,6 +51,8 @@ export class NotionTableView extends BasesView {
 	private pinnedColors: PinnedColors = new Map();
 	/** Column key → user-dragged width; unlisted columns size themselves. */
 	private columnWidths: ColumnWidths = new Map();
+	/** How the Name column's icons render (the `titleIcon` view option). */
+	private titleIcon = { mode: 'page', custom: '' };
 	/** The open select editor, if any (also drives outside-click detection). */
 	private selectEditor: SelectEditor | null = null;
 
@@ -90,6 +93,10 @@ export class NotionTableView extends BasesView {
 		this.pills = computePillProps(props, this.data.data, this.config, this.app);
 		this.pinnedColors = parsePinnedColors(this.config.get('pinnedColors'));
 		this.columnWidths = parseColumnWidths(this.config.get('columnWidths'));
+		this.titleIcon = {
+			mode: String(this.config.get('titleIcon') ?? 'page'),
+			custom: String(this.config.get('titleIconCustom') ?? '').trim(),
+		};
 
 		const table = root.createEl('table', { cls: 'ntn-table' });
 
@@ -97,7 +104,11 @@ export class NotionTableView extends BasesView {
 		const thead = table.createEl('thead');
 		const headRow = thead.createEl('tr');
 		const thTitle = headRow.createEl('th', { cls: 'ntn-th ntn-col-title' });
-		thTitle.createSpan({ cls: 'ntn-th-icon', text: 'Aa' });
+		// "Hidden" clears the whole Name column of iconography — the header's
+		// Notion type glyph as well as the per-row page icons.
+		if (this.titleIcon.mode !== 'none') {
+			thTitle.createSpan({ cls: 'ntn-th-icon', text: 'Aa' });
+		}
 		thTitle.createSpan({ text: 'Name' });
 		this.setupColumn(thTitle, TITLE_COLUMN_KEY, 0);
 		props.forEach((prop, i) => {
@@ -143,7 +154,7 @@ export class NotionTableView extends BasesView {
 		const titleTd = tr.createEl('td', { cls: 'ntn-td ntn-col-title' });
 		this.applyColumnWidth(titleTd, TITLE_COLUMN_KEY);
 		const titleWrap = titleTd.createDiv({ cls: 'ntn-title-wrap' });
-		titleWrap.createSpan({ cls: 'ntn-page-icon', text: '📄' });
+		this.renderTitleIcon(titleWrap);
 		const link = titleWrap.createSpan({
 			cls: 'ntn-title-text',
 			text: entry.file.basename,
@@ -185,6 +196,47 @@ export class NotionTableView extends BasesView {
 		if (width === undefined) return;
 		const px = `${width}px`;
 		cell.setCssStyles({ width: px, minWidth: px, maxWidth: px });
+	}
+
+	/**
+	 * The icon at the head of each Name cell. Notion's page emoji is the
+	 * default, but it is a fixed glyph that can sit badly against a theme —
+	 * so the `titleIcon` view option also offers Obsidian's own file icon
+	 * (which takes the theme's color), any emoji or Lucide icon the user
+	 * names, or no icon at all.
+	 */
+	private renderTitleIcon(wrap: HTMLElement): void {
+		const { mode, custom } = this.titleIcon;
+		if (mode === 'none') return;
+		const el = wrap.createSpan({ cls: 'ntn-page-icon' });
+		if (mode === 'theme') {
+			this.setLucideIcon(el, 'file-text');
+			return;
+		}
+		if (mode === 'custom' && custom) {
+			// A bare lowercase word is a Lucide icon name; anything else — an
+			// emoji, a letter, a symbol — is rendered as the text it is.
+			const named = /^[a-z][a-z0-9-]*$/.test(custom);
+			if (named && this.setLucideIcon(el, custom)) return;
+			el.setText(custom);
+			return;
+		}
+		// Both 'page' and a 'custom' with nothing filled in yet.
+		el.addClass('ntn-page-icon-emoji');
+		el.setText('📄');
+	}
+
+	/**
+	 * Draw a Lucide icon into the span. Returns false — leaving the span
+	 * untouched — when the name isn't a real icon, since `setIcon` fails
+	 * silently and would otherwise leave an empty gap before the title.
+	 */
+	private setLucideIcon(el: HTMLElement, name: string): boolean {
+		el.addClass('ntn-page-icon-lucide');
+		setIcon(el, name);
+		if (el.firstElementChild) return true;
+		el.removeClass('ntn-page-icon-lucide');
+		return false;
 	}
 
 	/** Apply a header cell's stored width and give it a drag-to-resize handle. */
