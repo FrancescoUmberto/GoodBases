@@ -344,11 +344,21 @@ export class NotionTableView extends BasesView {
 		// so the text wraps and stays visible; a single-line <input> would just
 		// scroll it horizontally. Numbers always use a single-line input.
 		const multiline = kind === 'text' && rect.height > 40;
+		// The input goes INSIDE the cell's own padding, and .ntn-input is
+		// border-box — so it has to be sized to the cell's CONTENT box. Using
+		// the full border-box size made the column (and row) jump wider by the
+		// padding for as long as the editor was open.
+		const style = td.win.getComputedStyle(td);
+		const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+		const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
 		td.empty();
 		const input = multiline
 			? td.createEl('textarea', { cls: 'ntn-input ntn-textarea' })
 			: td.createEl('input', { type: 'text', cls: 'ntn-input' });
-		input.setCssStyles({ width: `${rect.width}px`, height: `${rect.height}px` });
+		input.setCssStyles({
+			width: `${Math.max(0, rect.width - padX)}px`,
+			height: `${Math.max(0, rect.height - padY)}px`,
+		});
 		input.value = current;
 		input.focus();
 		input.select();
@@ -371,6 +381,14 @@ export class NotionTableView extends BasesView {
 			} else if (raw === '') {
 				out = null;
 			}
+			// Close the editor now rather than waiting for the write to land:
+			// processFrontMatter hits disk and Bases only re-renders once the
+			// metadata cache catches up, which leaves the input sitting in the
+			// cell for a visible beat. The optimistic text is replaced by the
+			// properly rendered value on the re-render that follows (or by the
+			// truth from disk, if the write fails).
+			td.empty();
+			td.createDiv({ cls: 'ntn-cell', text: raw });
 			void this.writeProperty(entry.file, propName, out);
 		};
 
