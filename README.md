@@ -62,6 +62,9 @@ centered Notion-style panel:
   a Notion-style panel: an editable title, the note's properties
   (editable just like the table), and the body rendered as formatted
   Markdown. See [The page panel](#the-page-panel).
+- **Resizable columns** — drag the border in a column header to set its
+  width; double-click that border to size the column back to its
+  content. Widths are saved per view in the `.base` file.
 - **Choose what OPEN does** — the *Open notes in* view option points the
   hover OPEN button at a new tab (default) or at the page panel.
 - **Grouping support** — respects the Bases `group by` configuration.
@@ -152,8 +155,8 @@ want to nudge one up the list?
   formatted Markdown, and an *Open notes in* option for the OPEN button.
 - ✅ **Custom pill colors** (0.6) — pick any color for a value, not just
   Notion's nine: the system color dialog or a typed hex, saved per value.
-- 🔵 **Column resizing** (next) — drag handles on column borders, with
-  widths persisted per view.
+- ✅ **Column resizing** (0.7) — drag handles on column borders,
+  double-click to reset, widths persisted per view.
 - 🔵 **Calculated footers** (next) — a Notion-style per-column
   *Calculate* row (count, sum, average, and more).
 - 🔵 **Editable tags** (next) — extend the select editor to write `tags`
@@ -165,6 +168,24 @@ want to nudge one up the list?
 
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
+
+### 0.7.0
+
+**📏 New — resizable columns.** Drag the border in a column header to set
+its width, and double-click that border to size the column back to its
+content. Widths are saved per view in the `.base` file, so they survive
+reloads and travel with the base.
+
+- **Added:** drag-to-resize handles on every column header, including the
+  Name column; double-click a handle to reset that column to auto width.
+- **Changed:** a narrowed column wraps taller when *Wrap all content* is
+  on and truncates when it is off, so resizing and wrapping compose.
+  Widening a column past the pane pushes the table into its horizontal
+  scroll rather than squeezing the other columns.
+- **Fixed:** editing a cell no longer widens its column (and heightens
+  its row) for as long as the editor is open.
+- **Fixed:** the cell editor now closes as soon as you press Enter,
+  instead of staying on screen until the property finished saving.
 
 ### 0.6.0
 

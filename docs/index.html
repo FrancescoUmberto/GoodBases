@@ -55,6 +55,13 @@
 				embeds and reading mode.</p>
 			</div>
 			<div class="card">
+				<span class="pill blue">Columns</span>
+				<h3>Resizable columns</h3>
+				<p>Drag the border in any column header to set its width, or
+				double-click that border to size the column back to its content.
+				Widths are saved per view, right in the <code>.base</code> file.</p>
+			</div>
+			<div class="card">
 				<span class="pill green">Pills</span>
 				<h3>Colored value pills</h3>
 				<p>Tags and list properties render with Notion's 9-color
@@ -184,8 +191,36 @@
 
 			<details class="release" open>
 				<summary>
-					<span class="ver">0.6.0</span>
+					<span class="ver">0.7.0</span>
 					<span class="tag">Latest</span>
+					<span class="tag major">Major</span>
+				</summary>
+				<div class="body">
+					<p class="headline">📏 <strong>New — resizable columns.</strong>
+						Drag the border in a column header to set its width, and
+						double-click that border to size the column back to its
+						content. Widths are saved per view in the
+						<code>.base</code> file, so they survive reloads and travel
+						with the base.</p>
+					<p>Also in this release:</p>
+					<ul>
+						<li>A narrowed column wraps taller when “Wrap all content”
+							is on, and truncates when it is off — resizing and
+							wrapping work together, like Notion.</li>
+						<li>Widening a column past the pane pushes the table into
+							its horizontal scroll instead of squeezing the rest.</li>
+						<li><strong>Fixed:</strong> editing a cell no longer widens
+							its column for as long as the editor is open.</li>
+						<li><strong>Fixed:</strong> the cell editor now closes the
+							moment you press Enter, instead of lingering until the
+							property finished saving.</li>
+					</ul>
+				</div>
+			</details>
+
+			<details class="release">
+				<summary>
+					<span class="ver">0.6.0</span>
 					<span class="tag major">Major</span>
 				</summary>
 				<div class="body">
