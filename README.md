@@ -54,6 +54,10 @@ centered Notion-style panel:
   applies everywhere that value appears. (You can also set colors in bulk
   with the *Pinned pill colors* view option — `value=color`, e.g.
   `Done=green` or `Done=#0088ff`.)
+- **Clickable tags** — a pill that is a real tag (the `tags` property,
+  `file.tags`, or any tag-typed value) opens the search pane for that tag
+  when clicked, exactly like tags in the built-in table and in your
+  notes. It works in group headers and in the page panel too.
 - **Inline editing** — click a cell to edit text and numbers in a
   floating input; checkboxes toggle in place. Pill cells open a
   select-style menu listing every value already used for that property,
@@ -159,7 +163,8 @@ want to nudge one up the list?
 - ✅ **Custom pill colors** (0.6) — pick any color for a value, not just
   Notion's nine: the system color dialog or a typed hex, saved per value.
 - ✅ **Column resizing** (0.7) — drag handles on column borders,
-  double-click to reset, widths persisted per view.
+  double-click to reset, widths persisted per view. Plus a choosable Name
+  column icon and tag pills that open the search pane.
 - 🔵 **Calculated footers** (next) — a Notion-style per-column
   *Calculate* row (count, sum, average, and more).
 - 🔵 **Editable tags** (next) — extend the select editor to write `tags`
@@ -171,6 +176,23 @@ want to nudge one up the list?
 
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
+
+### 0.7.2
+
+**🔖 New — tag pills are clickable.** Click a tag anywhere GoodBases
+draws it — a table cell, a group header, or a page panel property — and
+Obsidian's search pane opens on that tag, the same as clicking a tag in
+the built-in Bases table or in a note.
+
+- **Added:** tag pills open `tag:` searches; only real tags react, so
+  ordinary select and multitext pills still open the value menu as
+  before. Clicking the empty part of the cell keeps opening that menu.
+- **Added:** tags in the page panel's body now search too, and the panel
+  steps aside so you can see the results.
+- **Changed:** group headers drop the leading `#` when you group by
+  tags, matching how tags render in cells.
+
+Thanks to the community for the suggestion.
 
 ### 0.7.1
 

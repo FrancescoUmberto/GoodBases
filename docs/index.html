@@ -68,7 +68,8 @@
 				palette. A deterministic hash keeps each value's color stable
 				forever — or recolor any value yourself with the built-in
 				color picker: Notion's palette, or any custom color you
-				pick.</p>
+				pick. Tag pills stay clickable: they open Obsidian's search
+				for that tag.</p>
 			</div>
 			<div class="card">
 				<span class="pill yellow">Editing</span>
@@ -154,11 +155,13 @@
 						system color dialog or a typed hex, saved per value and used
 						everywhere it appears.</p>
 				</li>
-				<li class="next">
-					<div class="head"><strong>Column resizing</strong>
-						<span class="marker next">Next up</span></div>
+				<li class="done">
+					<div class="head"><strong>Column resizing &amp; tidier
+						columns</strong>
+						<span class="marker done">0.7 · shipped</span></div>
 					<p>Drag handles on column borders, with widths persisted per
-						view.</p>
+						view and double-click to reset. Plus a choosable Name column
+						icon and tag pills that open the search pane.</p>
 				</li>
 				<li class="next">
 					<div class="head"><strong>Calculated footers</strong>
@@ -193,8 +196,31 @@
 
 			<details class="release" open>
 				<summary>
-					<span class="ver">0.7.1</span>
+					<span class="ver">0.7.2</span>
 					<span class="tag">Latest</span>
+				</summary>
+				<div class="body">
+					<p class="headline">🔖 <strong>New — tag pills are
+						clickable.</strong> Click a tag anywhere GoodBases draws it
+						— a table cell, a group header, or a page panel property —
+						and Obsidian's search pane opens on that tag, just like
+						clicking a tag in the built-in Bases table or in a note.</p>
+					<ul>
+						<li>Only real tags react, so ordinary select and multitext
+							pills still open the value menu as before — as does
+							clicking the empty part of the cell.</li>
+						<li>Tags in the page panel's body search too, and the panel
+							steps aside so you can see the results.</li>
+						<li>Group headers now drop the leading <code>#</code> when
+							you group by tags, matching how tags render in cells.</li>
+					</ul>
+					<p class="note">Thanks to the community for the suggestion.</p>
+				</div>
+			</details>
+
+			<details class="release">
+				<summary>
+					<span class="ver">0.7.1</span>
 				</summary>
 				<div class="body">
 					<p class="headline">🎨 <strong>New — choose the Name column
