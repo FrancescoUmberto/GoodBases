@@ -23,6 +23,7 @@ import {
 } from 'obsidian';
 import { LOG_PREFIX } from '../constants';
 import { splitFrontmatter } from '../lib/frontmatter';
+import { openTagSearch } from '../lib/tag-search';
 
 /** What the select editor needs to open anchored to a property row / cell. */
 export interface OpenSelectOpts {
@@ -149,6 +150,13 @@ export class NotePageModal extends Modal {
 				void this.app.workspace.openLinkText(target, this.file.path, Keymap.isModEvent(evt));
 				return;
 			}
+			if (link?.hasClass('tag')) {
+				// Tags in the body search the vault, like tags anywhere else.
+				evt.preventDefault();
+				const tag = link.getAttribute('href') ?? link.getText();
+				if (openTagSearch(this.app, tag)) this.close();
+				return;
+			}
 			if (link) return; // external links keep their native behavior
 			this.editBody();
 		});
@@ -245,8 +253,10 @@ export class NotePageModal extends Modal {
 
 		const isPill = this.deps.isPillProp(key) || Array.isArray(value);
 		// Same rule as the table: tags have special semantics, keep them
-		// read-only rather than writing through naively.
-		const editable = key !== 'tags';
+		// read-only rather than writing through naively. (Bases matches the
+		// `tags` key case-insensitively, so we do too.)
+		const isTags = key.toLowerCase() === 'tags';
+		const editable = !isTags;
 
 		// ---- Pills: open the select editor ----
 		if (isPill) {
@@ -257,6 +267,7 @@ export class NotePageModal extends Modal {
 				const pill = valueEl.createSpan({ cls: 'ntn-pill' });
 				this.deps.applyColor(pill, item);
 				pill.setText(item.replace(/^#/, ''));
+				if (isTags) this.makeTagPill(pill, item);
 			}
 			if (!items.length) this.renderEmpty(valueEl);
 			if (editable) {
@@ -294,6 +305,19 @@ export class NotePageModal extends Modal {
 			valueEl.addClass('ntn-page-prop-editable');
 			valueEl.addEventListener('click', () => this.editScalar(valueEl, key, value));
 		}
+	}
+
+	/**
+	 * Make a pill search the vault for its tag, like the table's tag pills.
+	 * The panel covers the whole workspace, so it steps aside for the search
+	 * pane — closing also flushes any pending title/body edit (onClose).
+	 */
+	private makeTagPill(pill: HTMLElement, tag: string): void {
+		pill.addClass('ntn-pill-tag');
+		pill.addEventListener('click', (evt) => {
+			evt.stopPropagation();
+			if (openTagSearch(this.app, tag)) this.close();
+		});
 	}
 
 	/** Swap a property row's value for an input; Enter/blur commits, Esc cancels. */

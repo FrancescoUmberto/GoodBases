@@ -333,6 +333,15 @@
 	color: var(--ntn-pill-fg-dark, rgba(151,154,155,0.95));
 }
 
+/* Tag pills open the search pane on click, like tags everywhere else. */
+.ntn-pill-tag {
+	cursor: pointer;
+}
+
+.ntn-pill-tag:hover {
+	text-decoration: underline;
+}
+
 /* ---------------- Group rows ---------------- */
 
 .ntn-group-row td {

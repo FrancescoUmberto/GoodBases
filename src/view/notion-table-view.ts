@@ -13,6 +13,7 @@ import {
 	Platform,
 	QueryController,
 	TFile,
+	TagValue,
 	setIcon,
 } from 'obsidian';
 import { LOG_PREFIX, NOTION_TABLE_VIEW } from '../constants';
@@ -25,7 +26,8 @@ import {
 } from '../lib/column-widths';
 import { PinnedColors, applyPillColor, parseColorSpec } from '../lib/colors';
 import { PillDetection, computePillProps, parsePinnedColors } from '../lib/pills';
-import { valueToStrings } from '../lib/values';
+import { openTagSearch } from '../lib/tag-search';
+import { valueToItems, valueToStrings } from '../lib/values';
 import { NotePageModal, OpenSelectOpts } from './note-modal';
 import { SelectEditor } from './select-editor';
 
@@ -126,9 +128,12 @@ export class NotionTableView extends BasesView {
 			if (group.hasKey() && group.key) {
 				const gRow = tbody.createEl('tr', { cls: 'ntn-group-row' });
 				const gCell = gRow.createEl('td', { attr: { colspan: String(colCount) } });
+				const keyText = group.key.toString();
+				const isTag = group.key instanceof TagValue;
 				const pill = gCell.createSpan({ cls: 'ntn-pill' });
-				this.applyPillColor(pill, group.key.toString());
-				pill.setText(group.key.toString());
+				this.applyPillColor(pill, keyText);
+				pill.setText(isTag ? keyText.replace(/^#/, '') : keyText);
+				if (isTag) this.makeTagPill(pill, keyText);
 				gCell.createSpan({ cls: 'ntn-group-count', text: String(group.entries.length) });
 			}
 			for (const entry of group.entries) {
@@ -332,11 +337,11 @@ export class NotionTableView extends BasesView {
 		// ---- Pills (lists, tags, user-selected select-like properties) ----
 		if (this.pills.pillProps.has(prop)) {
 			const wrap = td.createDiv({ cls: 'ntn-pills' });
-			const items = valueToStrings(value);
-			for (const item of items) {
+			for (const item of valueToItems(value)) {
 				const pill = wrap.createSpan({ cls: 'ntn-pill' });
-				this.applyPillColor(pill, item);
-				pill.setText(item.replace(/^#/, ''));
+				this.applyPillColor(pill, item.text);
+				pill.setText(item.text.replace(/^#/, ''));
+				if (item.isTag) this.makeTagPill(pill, item.text);
 			}
 			if (editable && propName !== 'tags') {
 				td.addClass('ntn-editable');
@@ -577,6 +582,20 @@ export class NotionTableView extends BasesView {
 				),
 			closeSelect: () => this.closeSelectMenu(),
 		}).open();
+	}
+
+	/**
+	 * Make a pill behave like a tag link: clicking it searches the vault, the
+	 * way tags do in core Bases and in rendered notes. The click never reaches
+	 * the cell, so a tag in an editable pill column doesn't also open the
+	 * select editor — click the cell's empty space for that.
+	 */
+	private makeTagPill(pill: HTMLElement, tag: string): void {
+		pill.addClass('ntn-pill-tag');
+		pill.addEventListener('click', (evt) => {
+			evt.stopPropagation();
+			openTagSearch(this.app, tag);
+		});
 	}
 
 	/** Color a pill element using this view's pinned-color overrides. */
