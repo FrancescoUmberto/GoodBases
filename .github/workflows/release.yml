@@ -38,8 +38,23 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${GITHUB_REF#refs/tags/}"
-          gh release create "$tag" \
-            --title "$tag" \
-            --generate-notes \
-            --draft \
-            main.js manifest.json styles.css
+          notes="$RUNNER_TEMP/release-notes.md"
+
+          # This version's section of the README changelog (everything under
+          # "### <tag>" up to the next heading — the next release, or the
+          # section after the changelog) becomes the release body; gh
+          # prepends it to the auto-generated notes.
+          awk -v head="### $tag" '
+            $0 == head { found = 1; next }
+            found && /^##+ / { exit }
+            found { print }
+          ' README.md > "$notes"
+
+          args=(--title "$tag" --generate-notes --draft)
+          if grep -q '[^[:space:]]' "$notes"; then
+            args+=(--notes-file "$notes")
+          else
+            echo "::warning::No '### $tag' section in README.md — releasing with generated notes only."
+          fi
+
+          gh release create "$tag" "${args[@]}" main.js manifest.json styles.css
