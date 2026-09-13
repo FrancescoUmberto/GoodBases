@@ -69,6 +69,22 @@ centered Notion-style panel:
 - **Resizable columns** — drag the border in a column header to set its
   width; double-click that border to size the column back to its
   content. Widths are saved per view in the `.base` file.
+- **Sort from the column header** — click a column header for Notion's
+  menu: *Sort ascending*, *Sort descending*, and *Remove sort*. The sorted
+  column shows a direction arrow next to its name, and the choice is the
+  view's regular Bases sort, so it shows up in the toolbar's Sort menu
+  (and vice versa) and is saved in the `.base` file. Sorting a second
+  column makes it the primary sort and keeps the earlier one as a
+  tie-breaker.
+- **Calculate row** — hover the row under the table and click *Calculate*
+  in any column for Notion's calculations: *Count all*, *Count unique
+  values*, *Count empty*, *Count not empty*, *Percent empty*, *Percent
+  not empty*, plus *Sum*, *Average*, *Median*, *Min*, *Max*, *Range* and
+  *Standard deviation* for numbers, *Earliest date*, *Latest date* and
+  *Date range* for dates, and *Checked*, *Unchecked*, *Percent checked*,
+  *Percent unchecked* for checkboxes. Any custom summary formulas defined
+  in the base are offered too. The result shows as a small label and a
+  value, computed over the filtered rows; picking *None* clears it.
 - **Choose what OPEN does** — the *Open notes in* view option points the
   hover OPEN button at a new tab (default) or at the page panel.
 - **Grouping support** — respects the Bases `group by` configuration.
@@ -176,6 +192,37 @@ want to nudge one up the list?
 
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
+
+### 0.8.0
+
+**↕️ New — sort from the column header.** Click any column header and
+pick *Sort ascending* or *Sort descending*, the way Notion's column menu
+works. A sorted column shows a direction arrow after its name, and
+*Remove sort* appears in the menu while it's sorted.
+
+**🧮 New — Calculate row.** A Notion-style footer under the table: hover
+it and click *Calculate* in a column to pick a calculation for it —
+counts and percentages for every column, sums/averages/median/min/max/
+range/standard deviation for numbers, earliest/latest/date range for
+dates, checked/unchecked (and their percentages) for checkboxes. The
+result shows as a small label and value; *None* clears it.
+
+- **Added:** calculations that Bases has a built-in summary for are
+  stored as the view's regular summaries, so they also appear in the
+  built-in table's summary row (and anything set there shows here).
+  Notion's *Count all* and the percentages, which Bases has no function
+  for, are computed by GoodBases and stored in the view under
+  `calculations`.
+- **Added:** custom summary formulas defined in the base's `summaries:`
+  section are offered at the end of the Calculate menu.
+- **Added:** the header menu writes the view's regular Bases sort, so
+  what you pick here appears in the toolbar's Sort menu (and anything
+  set there shows as a header arrow). It's saved in the `.base` file
+  like the rest of the view.
+- **Added:** sorting a second column makes it the primary sort and keeps
+  the earlier one as a tie-breaker, matching the built-in table.
+- **Changed:** column headers now take a hover wash and a pointer
+  cursor, since they open a menu.
 
 ### 0.7.2
 
