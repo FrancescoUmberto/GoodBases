@@ -101,9 +101,10 @@ centered Notion-style panel:
 2. In the base toolbar, open the view selector and choose
    **Notion-style table**.
 3. Configure columns, filters, sorting, and grouping with the normal
-   Bases controls; this view adds its own options (wrapping, vertical
-   lines, open mode, pill properties, pinned colors) in the view
-   settings.
+   Bases controls — or sort straight from a column header and pick a
+   per-column calculation in the row under the table. This view adds
+   its own options (wrapping, vertical lines, open mode, Name column
+   icon, pill properties, pinned colors) in the view settings.
 
 Notes on editing:
 
@@ -181,8 +182,11 @@ want to nudge one up the list?
 - ✅ **Column resizing** (0.7) — drag handles on column borders,
   double-click to reset, widths persisted per view. Plus a choosable Name
   column icon and tag pills that open the search pane.
-- 🔵 **Calculated footers** (next) — a Notion-style per-column
-  *Calculate* row (count, sum, average, and more).
+- ✅ **Sorting & calculations** (0.8) — Notion's column-header sort
+  menu, and a per-column *Calculate* row: counts, percentages, sum,
+  average, median, min, max, range, date range, and more.
+- 🔵 **Per-group calculations** (next) — a Calculate row under each group
+  when the base is grouped, the way Notion does it.
 - 🔵 **Editable tags** (next) — extend the select editor to write `tags`
   safely (currently read-only).
 - ⚪️ **Board & gallery views** (exploring) — Kanban boards and card
@@ -195,12 +199,12 @@ The full history and downloadable builds are on the
 
 ### 0.8.0
 
-**↕️ New — sort from the column header.** Click any column header and
+**New: sort from the column header.** Click any column header and
 pick *Sort ascending* or *Sort descending*, the way Notion's column menu
 works. A sorted column shows a direction arrow after its name, and
 *Remove sort* appears in the menu while it's sorted.
 
-**🧮 New — Calculate row.** A Notion-style footer under the table: hover
+**New: Calculate row.** A Notion-style footer under the table: hover
 it and click *Calculate* in a column to pick a calculation for it —
 counts and percentages for every column, sums/averages/median/min/max/
 range/standard deviation for numbers, earliest/latest/date range for
