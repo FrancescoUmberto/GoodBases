@@ -6,9 +6,12 @@
 import {
 	BasesEntry,
 	BasesPropertyId,
+	BasesSortConfig,
 	BasesView,
 	BooleanValue,
+	Menu,
 	Notice,
+	NullValue,
 	NumberValue,
 	Platform,
 	QueryController,
@@ -17,6 +20,19 @@ import {
 	setIcon,
 } from 'obsidian';
 import { LOG_PREFIX, NOTION_TABLE_VIEW } from '../constants';
+import {
+	CalcKind,
+	Calculations,
+	calcKind,
+	calcLabel,
+	calcOptions,
+	formatPercent,
+	isLocalCalc,
+	localCalcBase,
+	parseCalculations,
+	sampleValue,
+	serializeCalculations,
+} from '../lib/calculations';
 import {
 	ColumnWidths,
 	MIN_COLUMN_WIDTH,
@@ -40,6 +56,35 @@ interface CoreNewItemMenu {
 	close(): void;
 }
 
+/**
+ * Internal sort setter on `BasesViewConfig` — the public API only reads the
+ * sort (`getSort`), while core's own table headers write it through this.
+ * It removes any existing entry for the property, then (for ASC/DESC) puts
+ * the property FIRST, so the clicked column becomes the primary sort and
+ * earlier sorts stay as secondaries; NONE just removes it. Guarded at
+ * runtime before use.
+ */
+interface CoreSortableConfig {
+	setSortProperty(
+		prop: BasesPropertyId,
+		direction: 'ASC' | 'DESC' | 'NONE' | 'TOGGLE',
+	): void;
+}
+
+/**
+ * Internal per-view summary accessors on `BasesViewConfig` (the `summaries:
+ * { prop: key }` map of the view config, which the public API doesn't
+ * expose). Core's own footer reads and writes through these; `null` clears.
+ * Guarded at runtime before use.
+ */
+interface CoreSummaryConfig {
+	getSummaryKey(prop: BasesPropertyId): string | null;
+	setSummaryKey(prop: BasesPropertyId, key: string | null): void;
+}
+
+/** What the synthetic Name column sorts by — the same as core's title column. */
+const TITLE_SORT_PROPERTY: BasesPropertyId = 'file.name';
+
 export class NotionTableView extends BasesView {
 	readonly type = NOTION_TABLE_VIEW;
 	private rootEl: HTMLElement;
@@ -53,6 +98,8 @@ export class NotionTableView extends BasesView {
 	private pinnedColors: PinnedColors = new Map();
 	/** Column key → user-dragged width; unlisted columns size themselves. */
 	private columnWidths: ColumnWidths = new Map();
+	/** Property → LOCAL footer calculation (core ones live in the view's `summaries`). */
+	private calculations: Calculations = new Map();
 	/** How the Name column's icons render (the `titleIcon` view option). */
 	private titleIcon = { mode: 'page', custom: '' };
 	/** The open select editor, if any (also drives outside-click detection). */
@@ -95,6 +142,7 @@ export class NotionTableView extends BasesView {
 		this.pills = computePillProps(props, this.data.data, this.config, this.app);
 		this.pinnedColors = parsePinnedColors(this.config.get('pinnedColors'));
 		this.columnWidths = parseColumnWidths(this.config.get('columnWidths'));
+		this.calculations = parseCalculations(this.config.get('calculations'));
 		this.titleIcon = {
 			mode: String(this.config.get('titleIcon') ?? 'page'),
 			custom: String(this.config.get('titleIconCustom') ?? '').trim(),
@@ -105,19 +153,24 @@ export class NotionTableView extends BasesView {
 		// ---- Header ----
 		const thead = table.createEl('thead');
 		const headRow = thead.createEl('tr');
+		const sorts = this.config.getSort();
 		const thTitle = headRow.createEl('th', { cls: 'ntn-th ntn-col-title' });
+		const titleLabel = thTitle.createSpan({ cls: 'ntn-th-content' });
 		// "Hidden" clears the whole Name column of iconography — the header's
 		// Notion type glyph as well as the per-row page icons.
 		if (this.titleIcon.mode !== 'none') {
-			thTitle.createSpan({ cls: 'ntn-th-icon', text: 'Aa' });
+			titleLabel.createSpan({ cls: 'ntn-th-icon', text: 'Aa' });
 		}
-		thTitle.createSpan({ text: 'Name' });
+		titleLabel.createSpan({ text: 'Name' });
 		this.setupColumn(thTitle, TITLE_COLUMN_KEY, 0);
+		this.setupSort(thTitle, titleLabel, TITLE_SORT_PROPERTY, sorts);
 		props.forEach((prop, i) => {
 			const th = headRow.createEl('th', { cls: 'ntn-th' });
-			th.createSpan({ text: this.config.getDisplayName(prop) });
+			const label = th.createSpan({ cls: 'ntn-th-content' });
+			label.createSpan({ text: this.config.getDisplayName(prop) });
 			// The title column occupies index 0, so property i sits at i + 1.
 			this.setupColumn(th, prop, i + 1);
+			this.setupSort(th, label, prop, sorts);
 		});
 
 		// ---- Body (group-aware) ----
@@ -140,6 +193,9 @@ export class NotionTableView extends BasesView {
 				this.renderRow(tbody, entry, props);
 			}
 		}
+
+		// ---- Calculate row (Notion's per-column footer) ----
+		this.renderCalcRow(table, props);
 
 		// ---- "+ New" footer ----
 		const newRow = root.createDiv({ cls: 'ntn-new-row' });
@@ -302,6 +358,210 @@ export class NotionTableView extends BasesView {
 			// Re-render to drop the inline widths this column's cells carry.
 			this.onDataUpdated();
 		});
+	}
+
+	/**
+	 * Notion's header interaction: a sorted column shows its direction arrow
+	 * after the name, and clicking a header opens a menu with Sort ascending /
+	 * Sort descending (plus Remove sort while the column is sorted). The write
+	 * goes through the internal `setSortProperty` — if it's ever missing the
+	 * header stays inert (arrow still drawn) and the toolbar's Sort menu keeps
+	 * working, so the view degrades rather than breaks.
+	 */
+	private setupSort(
+		th: HTMLElement,
+		label: HTMLElement,
+		prop: BasesPropertyId,
+		sorts: BasesSortConfig[],
+	): void {
+		const active = sorts.find((s) => s.property === prop);
+		if (active) {
+			const arrow = label.createSpan({ cls: 'ntn-th-sort' });
+			setIcon(arrow, active.direction === 'ASC' ? 'arrow-up' : 'arrow-down');
+		}
+		if (!this.sortableConfig()) return;
+		th.addClass('ntn-th-sortable');
+		th.addEventListener('click', (evt) => {
+			// The resize handle sits inside the header; its drag (pointer
+			// capture routes the click to the handle) and double-click reset
+			// must not also pop the menu.
+			if ((evt.target as HTMLElement).closest('.ntn-col-resize')) return;
+			this.openHeaderMenu(th, prop, active?.direction);
+		});
+	}
+
+	/** The column header's sort menu, dropped under the header like Notion's. */
+	private openHeaderMenu(
+		th: HTMLElement,
+		prop: BasesPropertyId,
+		current: 'ASC' | 'DESC' | undefined,
+	): void {
+		const config = this.sortableConfig();
+		if (!config) return;
+		this.closeSelectMenu();
+		const menu = new Menu();
+		menu.addItem((item) => item
+			.setTitle('Sort ascending')
+			.setIcon('arrow-up')
+			.setChecked(current === 'ASC')
+			.onClick(() => config.setSortProperty(prop, 'ASC')));
+		menu.addItem((item) => item
+			.setTitle('Sort descending')
+			.setIcon('arrow-down')
+			.setChecked(current === 'DESC')
+			.onClick(() => config.setSortProperty(prop, 'DESC')));
+		if (current) {
+			menu.addSeparator();
+			menu.addItem((item) => item
+				.setTitle('Remove sort')
+				.setIcon('x')
+				.onClick(() => config.setSortProperty(prop, 'NONE')));
+		}
+		// Anchor to the header rather than the pointer; th.doc keeps the menu
+		// in the right window when the view lives in a popout.
+		const rect = th.getBoundingClientRect();
+		menu.showAtPosition({ x: rect.left, y: rect.bottom + 4 }, th.doc);
+	}
+
+	/**
+	 * Notion's "Calculate" footer: one cell per column that shows the chosen
+	 * calculation as label + value, or a hover-revealed "Calculate" placeholder;
+	 * either opens the menu. Computed over the whole filtered result (not per
+	 * group). Core-backed calculations are read from the view's `summaries`
+	 * and evaluated by `getSummaryValue`; Count all and the percentages —
+	 * which core has no function for — are derived here (see lib/calculations).
+	 */
+	private renderCalcRow(table: HTMLElement, props: BasesPropertyId[]): void {
+		const tr = table.createEl('tfoot').createEl('tr', { cls: 'ntn-calc-row' });
+		const entries = this.data.data;
+		this.renderCalcCell(tr, TITLE_COLUMN_KEY, TITLE_SORT_PROPERTY, entries);
+		for (const prop of props) this.renderCalcCell(tr, prop, prop, entries);
+	}
+
+	private renderCalcCell(
+		tr: HTMLElement,
+		widthKey: string,
+		prop: BasesPropertyId,
+		entries: BasesEntry[],
+	): void {
+		const td = tr.createEl('td', { cls: 'ntn-td ntn-calc' });
+		this.applyColumnWidth(td, widthKey);
+		const kind = calcKind(sampleValue(entries, prop));
+		const key = this.calculationFor(prop);
+		if (key) {
+			td.createSpan({ cls: 'ntn-calc-label', text: calcLabel(key, kind) });
+			td.createSpan({ cls: 'ntn-calc-value', text: this.calcValue(prop, key, entries) });
+		} else {
+			const placeholder = td.createSpan({ cls: 'ntn-calc-placeholder' });
+			placeholder.createSpan({ text: 'Calculate' });
+			setIcon(placeholder.createSpan({ cls: 'ntn-calc-chevron' }), 'chevron-down');
+		}
+		td.addEventListener('click', () => this.openCalcMenu(td, prop, kind, key));
+	}
+
+	/** The column's calculation key: a local one wins, else the core summary. */
+	private calculationFor(prop: BasesPropertyId): string | null {
+		return this.calculations.get(prop) ?? this.summaryConfig()?.getSummaryKey(prop) ?? null;
+	}
+
+	/** Evaluate a calculation to its display text; `—` when core has no value. */
+	private calcValue(prop: BasesPropertyId, key: string, entries: BasesEntry[]): string {
+		if (!isLocalCalc(key)) return this.summaryText(prop, key, entries);
+		const base = localCalcBase(key);
+		if (base === null) return String(entries.length); // Count all
+		// A percentage is a core count over the row count.
+		const n = Number(this.summaryText(prop, base, entries));
+		return Number.isFinite(n) ? formatPercent(n, entries.length) : '—';
+	}
+
+	private summaryText(prop: BasesPropertyId, key: string, entries: BasesEntry[]): string {
+		const value = this.data.getSummaryValue(this.queryCtrl, entries, prop, key);
+		return value instanceof NullValue ? '—' : value.toString();
+	}
+
+	/** The footer cell's menu: None, then the calculations for the column's kind. */
+	private openCalcMenu(
+		td: HTMLElement,
+		prop: BasesPropertyId,
+		kind: CalcKind,
+		current: string | null,
+	): void {
+		this.closeSelectMenu();
+		const summary = this.summaryConfig();
+		const menu = new Menu();
+		menu.addItem((item) => item
+			.setTitle('None')
+			.setChecked(current === null)
+			.onClick(() => this.setCalculation(prop, null)));
+		menu.addSeparator();
+		for (const opt of calcOptions(kind)) {
+			// Core-backed choices need the internal setter to persist.
+			if (!opt.local && !summary) continue;
+			menu.addItem((item) => item
+				.setTitle(opt.label)
+				.setChecked(current === opt.key)
+				.onClick(() => this.setCalculation(prop, opt.key)));
+		}
+		// The base's own summary formulas (its `summaries:` section), if any.
+		const custom = summary ? this.customSummaryKeys() : [];
+		if (custom.length) {
+			menu.addSeparator();
+			for (const key of custom) {
+				menu.addItem((item) => item
+					.setTitle(key)
+					.setIcon('square-function')
+					.setChecked(current === key)
+					.onClick(() => this.setCalculation(prop, key)));
+			}
+		}
+		const rect = td.getBoundingClientRect();
+		menu.showAtPosition({ x: rect.left, y: rect.bottom + 4 }, td.doc);
+	}
+
+	/**
+	 * Persist a column's calculation. Local keys go to our `calculations`
+	 * config entry and core keys to the view's `summaries` — each column holds
+	 * at most one, so setting either side clears the other. Both writes save
+	 * the view config, which re-renders us.
+	 */
+	private setCalculation(prop: BasesPropertyId, key: string | null): void {
+		const summary = this.summaryConfig();
+		const local = key !== null && isLocalCalc(key);
+		// Core side: `setSummaryKey(null)` is a no-op (no save) when unset.
+		summary?.setSummaryKey(prop, local ? null : key);
+		// Local side: only write when something actually changes.
+		const had = this.calculations.get(prop);
+		if (local) {
+			if (had === key) return;
+			this.calculations.set(prop, key);
+		} else {
+			if (had === undefined) return;
+			this.calculations.delete(prop);
+		}
+		this.config.set('calculations', serializeCalculations(this.calculations));
+	}
+
+	/** Names of the custom summary formulas defined in this base, if reachable. */
+	private customSummaryKeys(): string[] {
+		const query = (this.queryCtrl as unknown as {
+			query?: { summaryFormulas?: Record<string, unknown> };
+		}).query;
+		const formulas = query?.summaryFormulas;
+		return formulas && typeof formulas === 'object' ? Object.keys(formulas) : [];
+	}
+
+	/** The view config's internal summary accessors, or null if this Obsidian lacks them. */
+	private summaryConfig(): CoreSummaryConfig | null {
+		const cfg = this.config as unknown as Partial<CoreSummaryConfig>;
+		return typeof cfg.getSummaryKey === 'function' && typeof cfg.setSummaryKey === 'function'
+			? (cfg as CoreSummaryConfig)
+			: null;
+	}
+
+	/** The view config's internal sort setter, or null if this Obsidian lacks it. */
+	private sortableConfig(): CoreSortableConfig | null {
+		const cfg = this.config as unknown as Partial<CoreSortableConfig>;
+		return typeof cfg.setSortProperty === 'function' ? (cfg as CoreSortableConfig) : null;
 	}
 
 	/**

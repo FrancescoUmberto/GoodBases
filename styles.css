@@ -72,6 +72,8 @@
    (see bug history #4) — don't reach for !important. */
 .ntn-root .ntn-table thead,
 .ntn-root .ntn-table thead tr,
+.ntn-root .ntn-table tfoot,
+.ntn-root .ntn-table tfoot tr,
 .ntn-root .ntn-th.ntn-th {
 	background: transparent;
 }
@@ -204,6 +206,101 @@
 	cursor: col-resize;
 	-webkit-user-select: none;
 	user-select: none;
+}
+
+/* ---------------- Column sorting ---------------- */
+
+/* The header's label (type glyph, name, sort arrow) on one centered flex
+   line, so the arrow icon sits level with the text. */
+.ntn-th-content {
+	display: inline-flex;
+	align-items: center;
+	max-width: 100%;
+}
+
+/* Sorting is a click on the header (Notion's column menu): the whole cell
+   reads as clickable and takes the hover wash. The wash selector has to
+   out-rank the transparent-header rule `.ntn-root .ntn-th.ntn-th` (bug
+   history #5) by specificity — no !important (bug history #4). */
+.ntn-root .ntn-th.ntn-th-sortable {
+	cursor: pointer;
+}
+
+.ntn-root .ntn-th.ntn-th-sortable:hover {
+	background: var(--ntn-hover);
+}
+
+/* Notion's direction arrow after a sorted column's name. */
+.ntn-th-sort {
+	display: inline-flex;
+	align-items: center;
+	margin-left: 4px;
+	color: var(--ntn-text-muted);
+}
+
+.ntn-th-sort svg {
+	width: 14px;
+	height: 14px;
+}
+
+/* ---------------- Calculate footer ---------------- */
+
+/* Notion's calculation row: right-aligned "LABEL value" per column, no
+   bottom hairline (the "+ New" row below draws its own). The doubled class
+   out-ranks .ntn-td's border/padding and .ntn-wrap's white-space by
+   specificity (bug history #4). */
+.ntn-root .ntn-calc.ntn-calc {
+	height: 32px;
+	padding-top: 0;
+	padding-bottom: 0;
+	border-bottom: none;
+	text-align: right;
+	white-space: nowrap;
+	color: var(--ntn-text-muted);
+	cursor: pointer;
+	-webkit-user-select: none;
+	user-select: none;
+	transition: background 20ms ease-in;
+}
+
+.ntn-root .ntn-calc.ntn-calc:hover {
+	background: var(--ntn-hover);
+}
+
+.ntn-calc-label {
+	font-size: 10px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-right: 6px;
+}
+
+.ntn-calc-value {
+	font-size: 14px;
+	color: var(--ntn-text);
+}
+
+/* The empty-cell prompt only shows while the pointer is on the row. */
+.ntn-calc-placeholder {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	font-size: 12px;
+	opacity: 0;
+	transition: opacity 20ms ease-in;
+}
+
+.ntn-calc-row:hover .ntn-calc-placeholder {
+	opacity: 1;
+}
+
+.ntn-calc-chevron {
+	display: inline-flex;
+	align-items: center;
+}
+
+.ntn-calc-chevron svg {
+	width: 12px;
+	height: 12px;
 }
 
 /* ---------------- Title column ---------------- */
