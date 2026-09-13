@@ -62,6 +62,14 @@
 				Widths are saved per view, right in the <code>.base</code> file.</p>
 			</div>
 			<div class="card">
+				<span class="pill blue">Sort &amp; calculate</span>
+				<h3>Header sorting and a Calculate row</h3>
+				<p>Click a column header for Notion's sort menu — ascending,
+				descending, or remove. Under the table, a Calculate row offers
+				counts, percentages, sum, average, median, min, max, range, and
+				date range per column, saved with the view.</p>
+			</div>
+			<div class="card">
 				<span class="pill green">Pills</span>
 				<h3>Colored value pills</h3>
 				<p>Tags and list properties render with Notion's 9-color
@@ -163,11 +171,18 @@
 						view and double-click to reset. Plus a choosable Name column
 						icon and tag pills that open the search pane.</p>
 				</li>
+				<li class="done">
+					<div class="head"><strong>Sorting &amp; calculations</strong>
+						<span class="marker done">0.8 · shipped</span></div>
+					<p>Notion's column-header sort menu, and a per-column
+						“Calculate” row — counts, percentages, sum, average, median,
+						min, max, range, date range, and more.</p>
+				</li>
 				<li class="next">
-					<div class="head"><strong>Calculated footers</strong>
+					<div class="head"><strong>Per-group calculations</strong>
 						<span class="marker next">Next up</span></div>
-					<p>A Notion-style per-column “Calculate” row — count, sum,
-						average, and more.</p>
+					<p>A Calculate row under each group when the base is grouped,
+						the way Notion does it.</p>
 				</li>
 				<li class="next">
 					<div class="head"><strong>Editable tags</strong>
@@ -196,8 +211,45 @@
 
 			<details class="release" open>
 				<summary>
-					<span class="ver">0.7.2</span>
+					<span class="ver">0.8.0</span>
 					<span class="tag">Latest</span>
+					<span class="tag major">Major</span>
+				</summary>
+				<div class="body">
+					<p class="headline">↕️ <strong>New — sort from the column
+						header.</strong> Click any column header and pick
+						<strong>Sort ascending</strong> or <strong>Sort
+						descending</strong>, the way Notion's column menu works. A
+						sorted column shows a direction arrow after its name, and
+						<strong>Remove sort</strong> appears while it's sorted.</p>
+					<p class="headline">🧮 <strong>New — Calculate row.</strong> A
+						Notion-style footer under the table: hover it and click
+						<strong>Calculate</strong> in a column to pick a calculation
+						— counts and percentages for every column, sum / average /
+						median / min / max / range / standard deviation for numbers,
+						earliest / latest / date range for dates, checked / unchecked
+						(and their percentages) for checkboxes. The result shows as a
+						small label and value; <strong>None</strong> clears it.</p>
+					<ul>
+						<li>Header sorting writes the view's regular Bases sort, so it
+							shows up in the toolbar's Sort menu (and vice versa) and is
+							saved in the <code>.base</code> file. Sorting a second
+							column makes it the primary sort and keeps the earlier one
+							as a tie-breaker.</li>
+						<li>Calculations Bases has a built-in summary for are stored
+							as the view's regular summaries, so they also appear in the
+							built-in table's summary row. Notion's <em>Count all</em>
+							and the percentages, which Bases has no function for, are
+							computed by GoodBases and saved with the view.</li>
+						<li>Custom summary formulas defined in the base are offered at
+							the end of the Calculate menu.</li>
+					</ul>
+				</div>
+			</details>
+
+			<details class="release">
+				<summary>
+					<span class="ver">0.7.2</span>
 				</summary>
 				<div class="body">
 					<p class="headline">🔖 <strong>New — tag pills are
@@ -540,9 +592,9 @@
 			<p>
 				GoodBases is built and maintained in my spare time, and it will
 				always be free. If it makes your vault a little nicer to work
-				in, a coffee goes toward new features — column resizing,
-				calculated footers, editable tags — and keeping up with
-				Obsidian's API changes.
+				in, a coffee goes toward new features — per-group calculations,
+				editable tags, more of Notion's column menu — and keeping up
+				with Obsidian's API changes.
 			</p>
 			<a class="bmc" href="https://buymeacoffee.com/umbertofrancesco">☕ Buy me a coffee</a>
 		</div>
