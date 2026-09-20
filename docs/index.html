@@ -83,8 +83,10 @@
 				<span class="pill yellow">Editing</span>
 				<h3>Inline cell editing</h3>
 				<p>Click a cell to edit text and numbers in a floating input;
-				checkboxes toggle in place. Pill cells open a select menu with
-				every known value, search, and create-on-Enter.</p>
+				checkboxes toggle in place. Pill cells — tags included — open a
+				select menu with every known value, search, and create-on-Enter.
+				Date cells open a Notion-style calendar, with a time selector
+				for date &amp; time properties.</p>
 			</div>
 			<div class="card">
 				<span class="pill gray">Panel</span>
@@ -178,17 +180,19 @@
 						“Calculate” row — counts, percentages, sum, average, median,
 						min, max, range, date range, and more.</p>
 				</li>
+				<li class="done">
+					<div class="head"><strong>Editable tags &amp; date editor</strong>
+						<span class="marker done">0.9 · shipped</span></div>
+					<p><code>tags</code> edit through the select editor like any
+						other pill property, and date cells open a Notion-style
+						calendar — with a time selector for date &amp; time
+						properties.</p>
+				</li>
 				<li class="next">
 					<div class="head"><strong>Per-group calculations</strong>
 						<span class="marker next">Next up</span></div>
 					<p>A Calculate row under each group when the base is grouped,
 						the way Notion does it.</p>
-				</li>
-				<li class="next">
-					<div class="head"><strong>Editable tags</strong>
-						<span class="marker next">Next up</span></div>
-					<p>Extend the select editor to write <code>tags</code> safely,
-						currently read-only.</p>
 				</li>
 				<li class="later">
 					<div class="head"><strong>Board &amp; gallery views</strong>
@@ -211,8 +215,46 @@
 
 			<details class="release" open>
 				<summary>
-					<span class="ver">0.8.0</span>
+					<span class="ver">0.9.0</span>
 					<span class="tag">Latest</span>
+					<span class="tag major">Major</span>
+				</summary>
+				<div class="body">
+					<p class="headline">🏷️ <strong>New — editable tags.</strong>
+						<code>tags</code> now edits like any other pill property:
+						click the empty part of a tags cell, or of the tags row in
+						the page panel, to open the select editor and add, remove or
+						create tags. Clicking a tag pill itself still searches for
+						that tag.</p>
+					<p class="headline">📅 <strong>New — date editor.</strong> Click
+						a date cell, in the table or the page panel, for a
+						Notion-style calendar: pick a day, or type any ISO date in
+						the field on top and press Enter. <strong>Today</strong> and
+						<strong>Clear</strong> sit at the bottom. <strong>Date &amp;
+						time</strong> properties add a time selector next to the date
+						field — picking a day keeps the calendar open so you can set
+						the clock too.</p>
+					<ul>
+						<li>Tags are written the way Obsidian's own property editor
+							stores them — a plain list without <code>#</code> — so
+							nothing changes in how they render or search.</li>
+						<li>An empty cell of a property typed <em>Date</em> or
+							<em>Date &amp; time</em> in the vault opens the calendar
+							too, so the first date can be picked rather than typed.</li>
+						<li>Dates are written as <code>YYYY-MM-DD</code>, and dates
+							with a time as <code>YYYY-MM-DDTHH:mm</code>, matching
+							Obsidian's date properties. A value that already has a time
+							keeps it when you pick a new day.</li>
+						<li>Clicking a date cell in the table reliably opens the
+							editor — the native date widget Bases renders there used to
+							swallow the click.</li>
+					</ul>
+				</div>
+			</details>
+
+			<details class="release">
+				<summary>
+					<span class="ver">0.8.0</span>
 					<span class="tag major">Major</span>
 				</summary>
 				<div class="body">
@@ -593,7 +635,7 @@
 				GoodBases is built and maintained in my spare time, and it will
 				always be free. If it makes your vault a little nicer to work
 				in, a coffee goes toward new features — per-group calculations,
-				editable tags, more of Notion's column menu — and keeping up
+				more of Notion's column menu, board and gallery views — and keeping up
 				with Obsidian's API changes.
 			</p>
 			<a class="bmc" href="https://buymeacoffee.com/umbertofrancesco">☕ Buy me a coffee</a>
