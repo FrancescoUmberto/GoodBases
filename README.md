@@ -59,9 +59,12 @@ centered Notion-style panel:
   when clicked, exactly like tags in the built-in table and in your
   notes. It works in group headers and in the page panel too.
 - **Inline editing** — click a cell to edit text and numbers in a
-  floating input; checkboxes toggle in place. Pill cells open a
-  select-style menu listing every value already used for that property,
-  with search and create-on-Enter.
+  floating input; checkboxes toggle in place. Pill cells — `tags`
+  included — open a select-style menu listing every value already used
+  for that property, with search and create-on-Enter.
+- **Date editor** — date cells open a Notion-style calendar: pick a day,
+  or type an ISO date in the field on top. Date & time properties add a
+  time selector next to it. *Today* and *Clear* sit at the bottom.
 - **Page panel** — **+ New** opens the freshly created note centered in
   a Notion-style panel: an editable title, the note's properties
   (editable just like the table), and the body rendered as formatted
@@ -110,8 +113,14 @@ Notes on editing:
 
 - Only note frontmatter properties (`note.*`) are editable; `file.*`
   and `formula.*` columns are read-only by nature.
-- `tags` pills are intentionally read-only for now — tags have special
-  semantics and deserve a careful write path.
+- `tags` edit like any other pill property: click the empty part of the
+  cell (or of the panel's property row) to open the select editor —
+  clicking a tag pill itself still searches for that tag.
+- Date properties open a calendar: pick a day, or type any ISO date
+  (`2026-09-20`, `2026-09-20T14:30`) in the field on top and press
+  Enter. *Today* and *Clear* sit at the bottom. Date & time properties
+  add a time selector next to the date field — picking a day keeps the
+  calendar open so you can set the clock too.
 
 ## Installation
 
@@ -185,10 +194,12 @@ want to nudge one up the list?
 - ✅ **Sorting & calculations** (0.8) — Notion's column-header sort
   menu, and a per-column *Calculate* row: counts, percentages, sum,
   average, median, min, max, range, date range, and more.
+- ✅ **Editable tags & date editor** (0.9) — `tags` edit through the
+  select editor like any other pill property, and date cells open a
+  Notion-style calendar, with a time selector for date & time
+  properties.
 - 🔵 **Per-group calculations** (next) — a Calculate row under each group
   when the base is grouped, the way Notion does it.
-- 🔵 **Editable tags** (next) — extend the select editor to write `tags`
-  safely (currently read-only).
 - ⚪️ **Board & gallery views** (exploring) — Kanban boards and card
   galleries; deprioritized for now while table fidelity comes first.
 
@@ -196,6 +207,33 @@ want to nudge one up the list?
 
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
+
+### 0.9.0
+
+**🏷️ New — editable tags.** `tags` now edits like any other pill
+property: click the empty part of a tags cell, or of the tags row in
+the page panel, to open the select editor and add, remove or create
+tags. Clicking a tag pill itself still searches for that tag.
+
+**📅 New — date editor.** Click a date cell (in the table or the page
+panel) for a Notion-style calendar: pick a day, or type any ISO date
+in the field on top and press Enter. *Today* and *Clear* sit at the
+bottom. **Date & time** properties add a time selector next to the
+date field — picking a day keeps the calendar open so you can set the
+clock too.
+
+- **Added:** tags are written the way Obsidian's own property editor
+  stores them — a plain list without `#` — so nothing changes in how
+  they render or search.
+- **Added:** an empty cell of a property typed *Date* or *Date & time*
+  in the vault opens the calendar too, so the first date can be picked
+  rather than typed.
+- **Added:** dates are written as `YYYY-MM-DD`, and dates with a time as
+  `YYYY-MM-DDTHH:mm`, matching Obsidian's date properties. A value that
+  already has a time keeps it when you pick a new day.
+- **Fixed:** clicking a date cell in the table reliably opens the
+  editor (the native date widget Bases renders there used to swallow the
+  click).
 
 ### 0.8.0
 
