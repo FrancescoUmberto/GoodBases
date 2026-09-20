@@ -486,6 +486,13 @@
 	font-size: 14px;
 }
 
+/* DateValue.renderTo draws a DISABLED native date input; disabled controls
+   swallow clicks, so let them fall through to the cell's own click-to-edit
+   (which opens the calendar editor). */
+.ntn-cell .metadata-input:disabled {
+	pointer-events: none;
+}
+
 /* ---------------- Inline editing ---------------- */
 
 .ntn-editable {
@@ -769,6 +776,164 @@
 .theme-dark .ntn-color-swatch {
 	background: var(--ntn-pill-bg-dark, #454B4E);
 	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* ---------------- Date editor (floating calendar) ---------------- */
+
+.ntn-date-menu {
+	position: fixed;
+	z-index: var(--layer-menu, 30);
+	width: 264px;
+	box-sizing: border-box;
+	padding: 8px;
+	background: var(--background-primary);
+	border-radius: 8px;
+	box-shadow: rgba(15, 15, 15, 0.05) 0 0 0 1px,
+		rgba(15, 15, 15, 0.1) 0 3px 6px,
+		rgba(15, 15, 15, 0.2) 0 9px 24px;
+}
+
+/* The typed date (and, for datetime properties, the time selector) on top,
+   like the date text of Notion's picker. */
+.ntn-date-fields {
+	display: flex;
+	gap: 6px;
+}
+
+/* Parent-scoped to outrank Obsidian's `input[type="text"]` /
+   `input[type="time"]` element rules. */
+.ntn-date-menu .ntn-date-field,
+.ntn-date-menu .ntn-date-time {
+	box-sizing: border-box;
+	height: 30px;
+	border: none;
+	outline: none;
+	border-radius: 4px;
+	background: var(--ntn-hover);
+	font-family: inherit;
+	font-size: 14px;
+	color: var(--ntn-text);
+	padding: 5px 8px;
+}
+
+.ntn-date-menu .ntn-date-field {
+	flex: 1;
+	min-width: 0;
+}
+
+.ntn-date-menu .ntn-date-time {
+	flex: 0 0 auto;
+	width: 96px;
+}
+
+.ntn-date-menu .ntn-date-time::-webkit-calendar-picker-indicator {
+	cursor: pointer;
+	opacity: 0.5;
+}
+
+.ntn-date-menu .ntn-date-field.ntn-date-field-invalid {
+	box-shadow: inset 0 0 0 1px rgb(224, 62, 62); /* Notion red */
+}
+
+.ntn-date-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 2px 6px;
+	font-size: 14px;
+	font-weight: 500;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.ntn-date-nav {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 4px;
+	color: var(--ntn-text-muted);
+	cursor: pointer;
+	transition: background 20ms ease-in;
+}
+
+.ntn-date-nav:hover {
+	background: var(--ntn-hover);
+	color: var(--ntn-text);
+}
+
+.ntn-date-nav svg {
+	width: 16px;
+	height: 16px;
+}
+
+.ntn-date-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 2px;
+}
+
+.ntn-date-weekday {
+	padding: 2px 0 4px;
+	text-align: center;
+	font-size: 11px;
+	color: var(--ntn-text-muted);
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.ntn-date-day {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 28px;
+	border-radius: 4px;
+	font-size: 13px;
+	cursor: pointer;
+	transition: background 20ms ease-in;
+}
+
+.ntn-date-day:hover {
+	background: var(--ntn-hover);
+}
+
+/* Days that pad the grid out from the neighbouring months. */
+.ntn-date-day.ntn-date-outside {
+	color: var(--ntn-text-muted);
+}
+
+.ntn-date-day.ntn-date-today {
+	color: rgb(235, 87, 87); /* Notion red — today's marker */
+	font-weight: 600;
+}
+
+.ntn-date-day.ntn-date-selected,
+.ntn-date-day.ntn-date-selected:hover {
+	background: var(--ntn-accent);
+	color: #fff;
+}
+
+.ntn-date-actions {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 8px;
+	padding-top: 8px;
+	border-top: 1px solid var(--ntn-border);
+}
+
+.ntn-date-action {
+	padding: 3px 6px;
+	border-radius: 4px;
+	font-size: 13px;
+	color: var(--ntn-text-muted);
+	cursor: pointer;
+	transition: background 20ms ease-in;
+}
+
+.ntn-date-action:hover {
+	background: var(--ntn-hover);
+	color: var(--ntn-text);
 }
 
 .ntn-checkbox {

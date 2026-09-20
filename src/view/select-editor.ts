@@ -5,42 +5,23 @@
  * (toggle, menu stays open); scalar pill properties single-select (pick and
  * close).
  *
- * The menu is self-contained: it captures a snapshot of the known values and
- * the editing entry's `file` at construction, never holding stale `BasesEntry`
- * objects, so it survives the view's `onDataUpdated` re-renders. The owning
- * view drives lifetime — outside-click and unload both call {@link close}.
- *
- * The menu mounts into `deps.container` (the document body for table cells,
- * the modal container for the page panel) — see `SelectEditorDeps.container`.
+ * The menu is self-contained: it captures a snapshot of the known values at
+ * construction and, like every {@link FloatingEditor}, holds only a stable
+ * `TFile` — never a `BasesEntry` — so it survives the view's `onDataUpdated`
+ * re-renders. The owning view drives its lifetime (outside click / Esc /
+ * unload) and the menu mounts into `deps.container` (the document body for
+ * table cells, the modal container for the page panel).
  */
-import { BasesEntry, BasesPropertyId, TFile } from 'obsidian';
+import { BasesEntry } from 'obsidian';
 import { NOTION_COLORS, applyColorVars, customColor } from '../lib/colors';
 import { valueToStrings } from '../lib/values';
+import { FloatingEditor, FloatingEditorDeps } from './floating-editor';
 
-export interface SelectEditorDeps {
-	/** The view's own window (popout-safe), used to clamp the menu on screen. */
-	win: Window;
-	/**
-	 * Element the menu (and its color flyout) is appended to — normally the
-	 * document body, but the page panel passes its modal container: Obsidian
-	 * traps focus inside the open modal's `containerEl`
-	 * (`Scope.setTabFocusContainerEl` + `Keymap.onFocusIn`), so a menu on the
-	 * body would lose the search input's focus to the modal's first focusable
-	 * element (the title) one tick after opening. Doubles as the scope for
-	 * {@link SelectEditor.reanchorIfMatches}, so a table re-render can't steal
-	 * the anchor of a menu opened from the panel.
-	 */
-	container: HTMLElement;
-	/** Cell element the menu anchors beneath. */
-	anchor: HTMLElement;
+export interface SelectEditorDeps extends FloatingEditorDeps {
 	/** Every entry in the current result, used to list the known values. */
 	entries: BasesEntry[];
-	/** The file being edited (a `TFile` is stable across data updates). */
-	file: TFile;
 	/** The values currently set on the file, in display form. */
 	current: string[];
-	/** Property being edited. */
-	prop: BasesPropertyId;
 	/** True for list (multi-select) properties; false for scalar (single-select). */
 	isList: boolean;
 	/** Color a pill element for the given value. */
@@ -52,15 +33,11 @@ export interface SelectEditorDeps {
 	 * custom hex (e.g. `"#0088ff"`).
 	 */
 	setColor: (value: string, color: string) => void;
-	/** Invoked once when the menu closes, so the owner can drop its reference. */
-	onClose: () => void;
 }
 
-export class SelectEditor {
-	private readonly menu: HTMLElement;
-	/** Open color-picker flyout, if any (a sibling popover on the body). */
+export class SelectEditor extends FloatingEditor<SelectEditorDeps> {
+	/** Open color-picker flyout, if any (a sibling popover in the container). */
 	private colorMenu: HTMLElement | null = null;
-	private closed = false;
 
 	/** Currently selected values (display form, leading `#` stripped). */
 	private selected: string[];
@@ -71,7 +48,8 @@ export class SelectEditor {
 	private optionsEl!: HTMLElement;
 	private input!: HTMLInputElement;
 
-	constructor(private readonly deps: SelectEditorDeps) {
+	constructor(deps: SelectEditorDeps) {
+		super(deps);
 		const { entries, current, prop } = deps;
 
 		for (const e of entries) {
@@ -91,38 +69,11 @@ export class SelectEditor {
 
 	/** Whether the given node lives inside the menu or its color flyout. */
 	contains(node: Node | null): boolean {
-		if (!node) return false;
-		return this.menu.contains(node) || (this.colorMenu?.contains(node) ?? false);
+		return super.contains(node) || (this.colorMenu?.contains(node) ?? false);
 	}
 
-	/** The cell element this menu is anchored to (drives click-to-toggle). */
-	get anchorEl(): HTMLElement {
-		return this.deps.anchor;
-	}
-
-	/**
-	 * Re-point the menu at a freshly rendered cell for the same file +
-	 * property. `onDataUpdated` replaces every `td`, so without this the
-	 * anchor would dangle on a detached node and click-to-toggle (which
-	 * compares against the live cell) would miss. Returns whether it matched.
-	 */
-	reanchorIfMatches(td: HTMLElement, filePath: string, prop: BasesPropertyId): boolean {
-		if (this.closed) return false;
-		if (this.deps.prop !== prop || this.deps.file.path !== filePath) return false;
-		// Only elements from the same surface the menu belongs to: a table
-		// re-render must not re-point a menu opened from the page panel.
-		if (!this.deps.container.contains(td)) return false;
-		this.deps.anchor = td;
-		return true;
-	}
-
-	/** Tear the menu down. Idempotent; notifies the owner via `onClose`. */
-	close(): void {
-		if (this.closed) return;
-		this.closed = true;
+	protected onClosing(): void {
 		this.closeColorMenu();
-		this.menu.remove();
-		this.deps.onClose();
 	}
 
 	private closeColorMenu(): void {
@@ -361,22 +312,5 @@ export class SelectEditor {
 		const rect = this.deps.anchor.getBoundingClientRect();
 		this.menu.setCssStyles({ minWidth: `${Math.max(rect.width, 220)}px` });
 		this.clampToWindow(this.menu, rect);
-	}
-
-	/** Place a popover just below `anchorRect`, nudged to stay on screen. */
-	private clampToWindow(el: HTMLElement, anchorRect: DOMRect): void {
-		const { win } = this.deps;
-		el.setCssStyles({
-			left: `${anchorRect.left}px`,
-			top: `${anchorRect.bottom + 4}px`,
-		});
-
-		const rect = el.getBoundingClientRect();
-		if (rect.bottom > win.innerHeight - 8) {
-			el.setCssStyles({ top: `${Math.max(8, anchorRect.top - rect.height - 4)}px` });
-		}
-		if (rect.right > win.innerWidth - 8) {
-			el.setCssStyles({ left: `${Math.max(8, win.innerWidth - rect.width - 8)}px` });
-		}
 	}
 }

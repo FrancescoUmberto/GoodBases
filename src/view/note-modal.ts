@@ -5,14 +5,15 @@
  * opens like Notion's page peek instead of a toolbar-anchored popover.
  *
  * Property rows are editable with the same model as the table: pill
- * properties open the view-managed select editor, booleans toggle in place,
- * plain values swap in an inline input. All writes go through the view (so
- * error handling and pinned colors stay in one place); after each write the
- * rows re-render from the file on disk.
+ * properties open the view-managed select editor, dates the calendar editor,
+ * booleans toggle in place, plain values swap in an inline input. All writes
+ * go through the view (so error handling and pinned colors stay in one
+ * place); after each write the rows re-render from the file on disk.
  */
 import {
 	App,
 	Component,
+	DateValue,
 	Keymap,
 	MarkdownRenderer,
 	Modal,
@@ -25,25 +26,34 @@ import { LOG_PREFIX } from '../constants';
 import { splitFrontmatter } from '../lib/frontmatter';
 import { openTagSearch } from '../lib/tag-search';
 
-/** What the select editor needs to open anchored to a property row / cell. */
-export interface OpenSelectOpts {
-	/** Element the menu anchors beneath (also drives click-to-toggle). */
+/** What any floating editor needs to open anchored to a property row / cell. */
+interface OpenEditorOpts {
+	/** Element the editor anchors beneath (also drives click-to-toggle). */
 	anchor: HTMLElement;
 	/**
-	 * Where the menu is mounted. Defaults to the view's document body; the
+	 * Where the editor is mounted. Defaults to the view's document body; the
 	 * page panel passes its modal container so Obsidian's modal focus trap
-	 * doesn't yank focus out of the menu's search input (see
-	 * `SelectEditorDeps.container`).
+	 * doesn't yank focus out of the editor's input (see
+	 * `FloatingEditorDeps.container`).
 	 */
 	container?: HTMLElement;
 	file: TFile;
 	/** Bare frontmatter property name (no `note.` prefix). */
 	propName: string;
+	/** Called after each successful write so the opener can re-render. */
+	onWrite?: () => void;
+}
+
+/** Opening the select editor: the pill values currently set. */
+export interface OpenSelectOpts extends OpenEditorOpts {
 	/** The values currently set, in display form. */
 	current: string[];
 	isList: boolean;
-	/** Called after each successful write so the opener can re-render. */
-	onWrite?: () => void;
+}
+
+/** Opening the date editor: the value as written (`''` when unset). */
+export interface OpenDateOpts extends OpenEditorOpts {
+	current: string;
 }
 
 /** Callbacks the owning view provides; all editing routes through the view. */
@@ -52,15 +62,17 @@ export interface NotePageModalDeps {
 	applyColor: (pill: HTMLElement, text: string) => void;
 	/** Persist one frontmatter property of a file (`null` deletes it). */
 	write: (file: TFile, propName: string, value: unknown) => Promise<void>;
-	/** Whether the property edits as pills / as a multi-value list. */
+	/** Whether the property edits as pills / as a multi-value list / as a date. */
 	isPillProp: (propName: string) => boolean;
 	isListProp: (propName: string) => boolean;
-	/** Open the view-managed select editor. */
+	isDateProp: (propName: string) => boolean;
+	/** Open the view-managed select / date editor. */
 	openSelect: (opts: OpenSelectOpts) => void;
-	/** Re-point an open select editor after its anchor row re-renders. */
-	reanchorSelect: (anchor: HTMLElement, filePath: string, propName: string) => void;
-	/** Close the view-managed select editor (modal teardown). */
-	closeSelect: () => void;
+	openDate: (opts: OpenDateOpts) => void;
+	/** Re-point an open editor after its anchor row re-renders. */
+	reanchorEditor: (anchor: HTMLElement, filePath: string, propName: string) => void;
+	/** Close the view-managed editor (modal teardown). */
+	closeEditor: () => void;
 }
 
 export class NotePageModal extends Modal {
@@ -251,12 +263,11 @@ export class NotePageModal extends Modal {
 		row.createDiv({ cls: 'ntn-page-prop-name', text: key });
 		const valueEl = row.createDiv({ cls: 'ntn-page-prop-value' });
 
-		const isPill = this.deps.isPillProp(key) || Array.isArray(value);
-		// Same rule as the table: tags have special semantics, keep them
-		// read-only rather than writing through naively. (Bases matches the
-		// `tags` key case-insensitively, so we do too.)
+		// Bases matches the `tags` key case-insensitively, so we do too. Tags
+		// are always a pill list — Bases wraps even a bare-string `tags: foo`
+		// in a tag list, and the select editor writes them back as one.
 		const isTags = key.toLowerCase() === 'tags';
-		const editable = !isTags;
+		const isPill = isTags || this.deps.isPillProp(key) || Array.isArray(value);
 
 		// ---- Pills: open the select editor ----
 		if (isPill) {
@@ -267,26 +278,26 @@ export class NotePageModal extends Modal {
 				const pill = valueEl.createSpan({ cls: 'ntn-pill' });
 				this.deps.applyColor(pill, item);
 				pill.setText(item.replace(/^#/, ''));
+				// A tag pill searches on click (and closes the panel); the
+				// row's empty space still opens the editor.
 				if (isTags) this.makeTagPill(pill, item);
 			}
 			if (!items.length) this.renderEmpty(valueEl);
-			if (editable) {
-				valueEl.addClass('ntn-page-prop-editable');
-				valueEl.addEventListener('click', () => {
-					this.deps.openSelect({
-						anchor: valueEl,
-						container: this.containerEl,
-						file: this.file,
-						propName: key,
-						current: items,
-						isList: this.deps.isListProp(key) || Array.isArray(value),
-						onWrite: () => void this.refreshProperties(),
-					});
+			valueEl.addClass('ntn-page-prop-editable');
+			valueEl.addEventListener('click', () => {
+				this.deps.openSelect({
+					anchor: valueEl,
+					container: this.containerEl,
+					file: this.file,
+					propName: key,
+					current: items,
+					isList: isTags || this.deps.isListProp(key) || Array.isArray(value),
+					onWrite: () => void this.refreshProperties(),
 				});
-				// Keep an open menu pointed at this re-rendered row (same
-				// pattern as the table's renderCell after a write).
-				this.deps.reanchorSelect(valueEl, this.file.path, key);
-			}
+			});
+			// Keep an open menu pointed at this re-rendered row (same
+			// pattern as the table's renderCell after a write).
+			this.deps.reanchorEditor(valueEl, this.file.path, key);
 			return;
 		}
 
@@ -298,13 +309,31 @@ export class NotePageModal extends Modal {
 			return;
 		}
 
-		// ---- Plain values: click-to-edit inline ----
-		if (this.isEmpty(value)) this.renderEmpty(valueEl);
-		else valueEl.createSpan({ text: this.formatScalar(value) });
-		if (editable) {
-			valueEl.addClass('ntn-page-prop-editable');
-			valueEl.addEventListener('click', () => this.editScalar(valueEl, key, value));
+		const text = this.isEmpty(value) ? '' : this.formatScalar(value);
+		if (text) valueEl.createSpan({ text });
+		else this.renderEmpty(valueEl);
+		valueEl.addClass('ntn-page-prop-editable');
+
+		// ---- Dates: open the calendar editor ----
+		// A date is what the vault registers as one (so an empty row still
+		// gets the calendar) or any value Bases itself would read as a date.
+		if (this.deps.isDateProp(key) || (text && DateValue.parseFromString(text))) {
+			valueEl.addEventListener('click', () => {
+				this.deps.openDate({
+					anchor: valueEl,
+					container: this.containerEl,
+					file: this.file,
+					propName: key,
+					current: text,
+					onWrite: () => void this.refreshProperties(),
+				});
+			});
+			this.deps.reanchorEditor(valueEl, this.file.path, key);
+			return;
 		}
+
+		// ---- Plain values: click-to-edit inline ----
+		valueEl.addEventListener('click', () => this.editScalar(valueEl, key, value));
 	}
 
 	/**
@@ -446,7 +475,7 @@ export class NotePageModal extends Modal {
 	}
 
 	onClose(): void {
-		this.deps.closeSelect();
+		this.deps.closeEditor();
 		this.renderComp?.unload();
 		this.renderComp = null;
 		if (this.saveTimer !== null) this.contentEl.win.clearTimeout(this.saveTimer);

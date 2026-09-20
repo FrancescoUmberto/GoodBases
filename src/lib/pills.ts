@@ -5,6 +5,7 @@
  */
 import { App, BasesEntry, BasesPropertyId, BasesViewConfig, ListValue } from 'obsidian';
 import { PinnedColors, parseColorSpec } from './colors';
+import { propertyWidget } from './property-types';
 
 /** Result of {@link computePillProps}. */
 export interface PillDetection {
@@ -30,10 +31,9 @@ function bareName(prop: BasesPropertyId): string {
  * List-typed pill properties also land in `listProps` so the select editor
  * knows whether to multi- or single-select.
  *
- * Vault-wide property types come from the undocumented-but-stable
- * `metadataTypeManager.getPropertyInfo`: a property registered as
- * multitext/tags/aliases is a list even when every visible row happens to hold
- * a bare string.
+ * Vault-wide property types come from `propertyWidget` (the vault's property
+ * type registry): a property registered as multitext/tags/aliases is a list
+ * even when every visible row happens to hold a bare string.
  */
 export function computePillProps(
 	props: BasesPropertyId[],
@@ -51,21 +51,15 @@ export function computePillProps(
 			: [],
 	);
 
-	const mtm = (app as unknown as {
-		metadataTypeManager?: { getPropertyInfo?: (name: string) => unknown };
-	}).metadataTypeManager;
-
 	for (const prop of props) {
 		const bare = bareName(prop).toLowerCase();
 		const display = config.getDisplayName(prop).toLowerCase();
-		const info = mtm?.getPropertyInfo?.(bare) as
-			| { type?: string; widget?: string }
-			| string
-			| undefined;
-		const metaType =
-			typeof info === 'string' ? info : info?.widget ?? info?.type;
+		const metaType = propertyWidget(app, bare);
+		// `tags` is always a list: Bases wraps even a bare-string `tags: foo`
+		// in a tag list, and the select editor must write it back as one.
 		let isList =
-			metaType === 'multitext' || metaType === 'tags' || metaType === 'aliases';
+			metaType === 'multitext' || metaType === 'tags' || metaType === 'aliases' ||
+			bare === 'tags';
 		if (!isList) {
 			for (const entry of entries) {
 				if (entry.getValue(prop) instanceof ListValue) {

@@ -9,6 +9,7 @@ import {
 	BasesSortConfig,
 	BasesView,
 	BooleanValue,
+	DateValue,
 	Menu,
 	Notice,
 	NullValue,
@@ -41,10 +42,14 @@ import {
 	serializeColumnWidths,
 } from '../lib/column-widths';
 import { PinnedColors, applyPillColor, parseColorSpec } from '../lib/colors';
+import { splitDateTime } from '../lib/dates';
 import { PillDetection, computePillProps, parsePinnedColors } from '../lib/pills';
+import { isDateWidget, propertyWidget } from '../lib/property-types';
 import { openTagSearch } from '../lib/tag-search';
 import { valueToItems, valueToStrings } from '../lib/values';
-import { NotePageModal, OpenSelectOpts } from './note-modal';
+import { DateEditor } from './date-editor';
+import { FloatingEditor } from './floating-editor';
+import { NotePageModal, OpenDateOpts, OpenSelectOpts } from './note-modal';
 import { SelectEditor } from './select-editor';
 
 /**
@@ -102,27 +107,30 @@ export class NotionTableView extends BasesView {
 	private calculations: Calculations = new Map();
 	/** How the Name column's icons render (the `titleIcon` view option). */
 	private titleIcon = { mode: 'page', custom: '' };
-	/** The open select editor, if any (also drives outside-click detection). */
-	private selectEditor: SelectEditor | null = null;
+	/**
+	 * The open floating editor (select or date), if any — at most one at a
+	 * time; also drives outside-click detection.
+	 */
+	private editor: FloatingEditor | null = null;
 
 	constructor(controller: QueryController, parentEl: HTMLElement) {
 		super(controller);
 		this.queryCtrl = controller;
 		this.rootEl = parentEl.createDiv({ cls: 'ntn-root' });
-		this.register(() => this.closeSelectMenu());
+		this.register(() => this.closeEditor());
 		// rootEl.doc resolves to the view's own document, so this also works
 		// when the view lives in a popout window (plain `document` would not).
-		// One persistent capture-phase listener that no-ops unless a menu is open
-		// — do not revert to a per-menu `document.addEventListener`.
+		// One persistent capture-phase listener that no-ops unless an editor is
+		// open — do not revert to a per-editor `document.addEventListener`.
 		this.registerDomEvent(this.rootEl.doc, 'mousedown', (evt) => {
-			if (!this.selectEditor) return;
+			if (!this.editor) return;
 			const target = evt.target as Node;
-			if (this.selectEditor.contains(target)) return;
+			if (this.editor.contains(target)) return;
 			// A click on the anchoring cell is left to that cell's own click
-			// handler, which toggles the menu shut (see openSelectEditor).
+			// handler, which toggles the editor shut (see openEditor).
 			// Closing here too would let the click re-open it instead.
-			if (this.selectEditor.anchorEl.contains(target)) return;
-			this.closeSelectMenu();
+			if (this.editor.anchorEl.contains(target)) return;
+			this.closeEditor();
 		}, { capture: true });
 		this.patchToolbarNew();
 	}
@@ -398,7 +406,7 @@ export class NotionTableView extends BasesView {
 	): void {
 		const config = this.sortableConfig();
 		if (!config) return;
-		this.closeSelectMenu();
+		this.closeEditor();
 		const menu = new Menu();
 		menu.addItem((item) => item
 			.setTitle('Sort ascending')
@@ -486,7 +494,7 @@ export class NotionTableView extends BasesView {
 		kind: CalcKind,
 		current: string | null,
 	): void {
-		this.closeSelectMenu();
+		this.closeEditor();
 		const summary = this.summaryConfig();
 		const menu = new Menu();
 		menu.addItem((item) => item
@@ -603,14 +611,16 @@ export class NotionTableView extends BasesView {
 				pill.setText(item.text.replace(/^#/, ''));
 				if (item.isTag) this.makeTagPill(pill, item.text);
 			}
-			if (editable && propName !== 'tags') {
+			// Tags included: a tag pill itself searches on click (see
+			// makeTagPill), the cell's empty space opens the editor.
+			if (editable) {
 				td.addClass('ntn-editable');
 				td.addEventListener('click', () =>
 					this.openSelectEditor(td, entry, prop, propName),
 				);
 				// Keep an open menu pointed at this re-rendered cell so
 				// click-to-toggle keeps working after a write re-renders the table.
-				this.selectEditor?.reanchorIfMatches(td, entry.file.path, prop);
+				this.editor?.reanchorIfMatches(td, entry.file.path, prop);
 			}
 			return;
 		}
@@ -634,15 +644,31 @@ export class NotionTableView extends BasesView {
 		if (value !== null) {
 			value.renderTo(cellEl, this.app.renderContext);
 		}
-		if (editable) {
-			td.addClass('ntn-editable');
-			const kind = value instanceof NumberValue ? 'number' : 'text';
-			td.addEventListener('click', (evt) => {
-				// Don't hijack clicks on links rendered inside the cell.
-				if ((evt.target as HTMLElement).closest('a')) return;
-				this.editCell(td, entry, propName, value ? value.toString() : '', kind);
-			});
+		if (!editable) return;
+		td.addClass('ntn-editable');
+
+		// ---- Dates: the calendar editor ----
+		// A cell holding a date value, or an empty cell of a property the
+		// vault registers as a date (so the first date can be picked too).
+		const isDate = value instanceof DateValue ||
+			(value === null && isDateWidget(propertyWidget(this.app, propName)));
+		if (isDate) {
+			td.addEventListener('click', () => this.openDateAt({
+				anchor: td,
+				file: entry.file,
+				propName,
+				current: value ? value.toString() : '',
+			}));
+			this.editor?.reanchorIfMatches(td, entry.file.path, prop);
+			return;
 		}
+
+		const kind = value instanceof NumberValue ? 'number' : 'text';
+		td.addEventListener('click', (evt) => {
+			// Don't hijack clicks on links rendered inside the cell.
+			if ((evt.target as HTMLElement).closest('a')) return;
+			this.editCell(td, entry, propName, value ? value.toString() : '', kind);
+		});
 	}
 
 	/** Swap a cell's content for an input; commit on Enter/blur, cancel on Esc. */
@@ -835,12 +861,14 @@ export class NotionTableView extends BasesView {
 				this.pills.pillProps.has(`note.${name}` as BasesPropertyId),
 			isListProp: (name) =>
 				this.pills.listProps.has(`note.${name}` as BasesPropertyId),
+			isDateProp: (name) => isDateWidget(propertyWidget(this.app, name)),
 			openSelect: (opts) => this.openSelectAt(opts),
-			reanchorSelect: (anchor, filePath, propName) =>
-				void this.selectEditor?.reanchorIfMatches(
+			openDate: (opts) => this.openDateAt(opts),
+			reanchorEditor: (anchor, filePath, propName) =>
+				void this.editor?.reanchorIfMatches(
 					anchor, filePath, `note.${propName}` as BasesPropertyId,
 				),
-			closeSelect: () => this.closeSelectMenu(),
+			closeEditor: () => this.closeEditor(),
 		}).open();
 	}
 
@@ -885,29 +913,60 @@ export class NotionTableView extends BasesView {
 	 * result; lifetime stays with the view (outside-click / Esc / unload).
 	 */
 	private openSelectAt(opts: OpenSelectOpts): void {
-		// Clicking the element whose menu is already open toggles it shut.
-		if (this.selectEditor?.anchorEl === opts.anchor) {
-			this.closeSelectMenu();
-			return;
-		}
-		this.closeSelectMenu();
-		const prop = `note.${opts.propName}` as BasesPropertyId;
-		this.selectEditor = new SelectEditor({
+		this.openEditor(opts.anchor, () => new SelectEditor({
 			win: this.rootEl.win,
 			container: opts.container ?? this.rootEl.doc.body,
 			anchor: opts.anchor,
 			entries: this.data.data,
 			file: opts.file,
 			current: opts.current,
-			prop,
+			prop: `note.${opts.propName}` as BasesPropertyId,
 			isList: opts.isList,
 			applyColor: (pill, text) => this.applyPillColor(pill, text),
 			write: (value) =>
 				void this.writeProperty(opts.file, opts.propName, value)
 					.then(() => opts.onWrite?.()),
 			setColor: (value, color) => this.setPinnedColor(value, color),
-			onClose: () => { this.selectEditor = null; },
-		});
+			onClose: () => { this.editor = null; },
+		}));
+	}
+
+	/**
+	 * Open the calendar editor anchored to a date cell or property row. The
+	 * time selector shows for properties the vault types as `datetime`, and
+	 * for any value that already carries a time (so it's never silently
+	 * dropped when the property isn't typed).
+	 */
+	private openDateAt(opts: OpenDateOpts): void {
+		const withTime = propertyWidget(this.app, opts.propName) === 'datetime' ||
+			splitDateTime(opts.current).time !== '';
+		this.openEditor(opts.anchor, () => new DateEditor({
+			win: this.rootEl.win,
+			container: opts.container ?? this.rootEl.doc.body,
+			anchor: opts.anchor,
+			file: opts.file,
+			current: opts.current,
+			withTime,
+			prop: `note.${opts.propName}` as BasesPropertyId,
+			write: (value) =>
+				void this.writeProperty(opts.file, opts.propName, value)
+					.then(() => opts.onWrite?.()),
+			onClose: () => { this.editor = null; },
+		}));
+	}
+
+	/**
+	 * Replace the open floating editor with a new one — unless the click is on
+	 * the element whose editor is already open, which toggles it shut instead
+	 * (the outside-mousedown listener leaves anchor clicks alone for this).
+	 */
+	private openEditor(anchor: HTMLElement, create: () => FloatingEditor): void {
+		if (this.editor?.anchorEl === anchor) {
+			this.closeEditor();
+			return;
+		}
+		this.closeEditor();
+		this.editor = create();
 	}
 
 	/**
@@ -935,8 +994,8 @@ export class NotionTableView extends BasesView {
 		this.config.set('pinnedColors', kept);
 	}
 
-	private closeSelectMenu(): void {
-		this.selectEditor?.close();
-		this.selectEditor = null;
+	private closeEditor(): void {
+		this.editor?.close();
+		this.editor = null;
 	}
 }
