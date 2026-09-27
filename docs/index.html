@@ -92,8 +92,8 @@
 				<span class="pill gray">Panel</span>
 				<h3>Notion-style page panel</h3>
 				<p><strong>+ New</strong> opens the note centered in a panel, like
-				Notion's page peek: editable title, editable properties, and the
-				body rendered as formatted Markdown — click to edit the source.</p>
+				Notion's page peek: editable title, editable properties, and a
+				Live Preview body that stays formatted while you type.</p>
 			</div>
 			<div class="card">
 				<span class="pill purple">OPEN</span>
@@ -188,6 +188,12 @@
 						calendar — with a time selector for date &amp; time
 						properties.</p>
 				</li>
+				<li class="done">
+					<div class="head"><strong>Live Preview in the page panel</strong>
+						<span class="marker done">1.0 · shipped</span></div>
+					<p>The panel's body is Obsidian's own Live Preview editor, so
+						notes stay formatted while you edit them.</p>
+				</li>
 				<li class="next">
 					<div class="head"><strong>Per-group calculations</strong>
 						<span class="marker next">Next up</span></div>
@@ -215,8 +221,36 @@
 
 			<details class="release" open>
 				<summary>
-					<span class="ver">0.9.0</span>
+					<span class="ver">1.0.0</span>
 					<span class="tag">Latest</span>
+					<span class="tag major">Major</span>
+				</summary>
+				<div class="body">
+					<p class="headline">🎉 <strong>GoodBases 1.0.</strong> The table,
+						the page panel, pills, sorting, calculations and the date
+						editor are all in place — this release marks the plugin as
+						stable.</p>
+					<p class="headline">✍️ <strong>New — Live Preview in the page
+						panel.</strong> The body of a note opened in the page panel is
+						now Obsidian's own Live Preview editor. Headings, lists, links
+						and formatting stay rendered while you type, instead of
+						switching to raw Markdown the moment you start editing.</p>
+					<ul>
+						<li>Editor hotkeys (bold, italic, toggle checklist…) work in
+							the panel's body.</li>
+						<li>Enter on the title moves the caret straight into the body,
+							and clicking below the text places it at the end.</li>
+						<li>Following a link from the body opens the note in the
+							workspace and closes the panel so you can see it.</li>
+						<li>The body always uses Live Preview, even if your vault's
+							default editing mode is Source.</li>
+					</ul>
+				</div>
+			</details>
+
+			<details class="release">
+				<summary>
+					<span class="ver">0.9.0</span>
 					<span class="tag major">Major</span>
 				</summary>
 				<div class="body">
