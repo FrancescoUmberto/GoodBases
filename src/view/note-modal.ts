@@ -14,6 +14,7 @@ import {
 	App,
 	Component,
 	DateValue,
+	EventRef,
 	Keymap,
 	MarkdownRenderer,
 	Modal,
@@ -25,6 +26,7 @@ import {
 import { LOG_PREFIX } from '../constants';
 import { splitFrontmatter } from '../lib/frontmatter';
 import { openTagSearch } from '../lib/tag-search';
+import { createLiveEditor, LiveEditor } from './live-editor';
 
 /** What any floating editor needs to open anchored to a property row / cell. */
 interface OpenEditorOpts {
@@ -84,8 +86,12 @@ export class NotePageModal extends Modal {
 	private bodyArea!: HTMLTextAreaElement;
 	/** Lifetime owner for MarkdownRenderer children; replaced per render. */
 	private renderComp: Component | null = null;
+	/** The Live Preview body editor; null when using the textarea fallback. */
+	private liveEditor: LiveEditor | null = null;
+	private fileOpenRef: EventRef | null = null;
+	private closed = false;
 	private saveTimer: number | null = null;
-	/** True while the textarea holds keystrokes not yet written to disk. */
+	/** True while the body holds keystrokes not yet written to disk. */
 	private dirty = false;
 
 	constructor(app: App, file: TFile, deps: NotePageModalDeps) {
@@ -144,12 +150,55 @@ export class NotePageModal extends Modal {
 		// The note as written on disk: frontmatter feeds the properties
 		// section, the body feeds the textarea.
 		const { frontmatter, body } = splitFrontmatter(await this.app.vault.read(this.file));
+		// Closed while the file was being read: onClose already ran, so
+		// don't build an editor nothing would tear down.
+		if (this.closed) return;
 
 		// ---- Properties (hidden via CSS while empty) ----
 		this.propsEl = contentEl.createDiv({ cls: 'ntn-page-props' });
 		this.renderPropertyRows(this.parseProperties(frontmatter));
 
-		// ---- Body: rendered markdown, click to edit in a textarea ----
+		// ---- Body: a Live Preview editor, like a note tab ----
+		const editorHost = contentEl.createDiv({ cls: 'ntn-page-editor' });
+		this.liveEditor = createLiveEditor(this.app, editorHost, this.file, body, () => {
+			this.updateEditorEmpty(editorHost);
+			this.scheduleSave();
+		});
+		if (this.liveEditor) {
+			this.updateEditorEmpty(editorHost);
+			// Clicks in the host's padding / below the text land here, not
+			// in CodeMirror — send them to the editor like a note tab does.
+			editorHost.addEventListener('click', (evt) => {
+				if (evt.target === editorHost) this.liveEditor?.focus();
+			});
+			// Links followed from the editor open in the workspace behind
+			// the panel; step aside so the note that opened is visible.
+			this.fileOpenRef = this.app.workspace.on('file-open', (opened) => {
+				if (opened && opened !== this.file) this.close();
+			});
+		} else {
+			editorHost.remove();
+			this.buildFallbackBody(body);
+			await this.renderPreview();
+		}
+
+		// Focus the title with its text selected so typing replaces the
+		// placeholder "Untitled" name immediately.
+		this.pageTitleEl.focus();
+		contentEl.win.getSelection()?.selectAllChildren(this.pageTitleEl);
+	}
+
+	/** The live editor's "Write something…" placeholder, shown while empty. */
+	private updateEditorEmpty(host: HTMLElement): void {
+		host.toggleClass('ntn-page-editor-empty', !this.getBody().trim());
+	}
+
+	/**
+	 * Fallback body when the internal editor can't be built (see
+	 * live-editor.ts): rendered markdown, click to edit in a textarea.
+	 */
+	private buildFallbackBody(body: string): void {
+		const { contentEl } = this;
 		this.previewEl = contentEl.createDiv({
 			cls: 'ntn-page-preview markdown-rendered',
 		});
@@ -186,19 +235,21 @@ export class NotePageModal extends Modal {
 			if (this.dirty) void this.saveBody();
 			void this.showPreview();
 		});
-
-		await this.renderPreview();
-
-		// Focus the title with its text selected so typing replaces the
-		// placeholder "Untitled" name immediately.
-		this.pageTitleEl.focus();
-		contentEl.win.getSelection()?.selectAllChildren(this.pageTitleEl);
 	}
 
-	// ---------------- Body: preview <-> edit ----------------
+	// ---------------- Body: editor / preview <-> textarea ----------------
 
-	/** Swap the rendered body for the markdown textarea and focus it. */
+	/** The body text as currently edited. */
+	private getBody(): string {
+		return this.liveEditor ? this.liveEditor.getValue() : this.bodyArea.value;
+	}
+
+	/** Move the caret into the body (Enter on the title). */
 	private editBody(): void {
+		if (this.liveEditor) {
+			this.liveEditor.focus();
+			return;
+		}
 		this.previewEl.addClass('ntn-hidden');
 		this.bodyArea.removeClass('ntn-hidden');
 		this.autoSizeBody();
@@ -444,11 +495,14 @@ export class NotePageModal extends Modal {
 
 	private async saveBody(): Promise<void> {
 		this.dirty = false;
+		// Snapshot synchronously: on close the editor is destroyed right
+		// after this starts, and its value would read back empty later.
+		const body = this.getBody();
 		try {
 			// Re-split on every save so frontmatter written while the panel is
 			// open (property edits, Bases itself) is never clobbered.
 			await this.app.vault.process(this.file, (data) =>
-				splitFrontmatter(data).frontmatter + this.bodyArea.value,
+				splitFrontmatter(data).frontmatter + body,
 			);
 		} catch (e) {
 			console.error(`${LOG_PREFIX} failed to save note body`, e);
@@ -483,6 +537,11 @@ export class NotePageModal extends Modal {
 		// Runs async (Modal.onClose is typed void); the input elements stay
 		// alive in the closure even after the modal DOM is emptied.
 		void this.flushPendingEdits();
+		this.closed = true;
+		this.liveEditor?.destroy();
+		this.liveEditor = null;
+		if (this.fileOpenRef) this.app.workspace.offref(this.fileOpenRef);
+		this.fileOpenRef = null;
 		this.contentEl.empty();
 	}
 

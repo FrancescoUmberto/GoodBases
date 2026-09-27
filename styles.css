@@ -1089,6 +1089,49 @@
 	color: var(--ntn-text-muted);
 }
 
+/* Live Preview body editor (live-editor.ts): Obsidian's own markdown editor,
+   so headings / lists / links format in place while typing. Core sizes it
+   for a scrolling note tab (file margins, readable-width sizer, its own
+   scroller); here it flows in the panel, which does the scrolling. The
+   extra .mod-cm6 outranks core's `.markdown-source-view.mod-cm6 …` rules
+   (same doubled-class trick as bug history #4). */
+.ntn-page-editor {
+	--font-text-size: 16px;
+	--line-height-normal: 1.6;
+	position: relative;
+	flex: none;
+	min-height: 280px;
+	cursor: text;
+	color: var(--ntn-text);
+}
+
+.ntn-page-editor .markdown-source-view.mod-cm6.mod-cm6 .cm-scroller {
+	padding: 0;
+	overflow: visible;
+}
+
+.ntn-page-editor .markdown-source-view.mod-cm6.mod-cm6 .cm-sizer {
+	max-width: none;
+	margin: 0;
+	padding: 0;
+}
+
+.ntn-page-editor .markdown-source-view.mod-cm6.mod-cm6 .cm-content {
+	padding-top: 0;
+}
+
+/* CodeMirror has no placeholder without its own extension; fake it. */
+.ntn-page-editor-empty::before {
+	content: "Write something…";
+	position: absolute;
+	top: 0;
+	left: 0;
+	font-size: 16px;
+	line-height: 1.6;
+	color: var(--ntn-text-muted);
+	pointer-events: none;
+}
+
 /* Body preview and textarea swap via this class, never both visible. */
 .ntn-page-content .ntn-hidden {
 	display: none;
