@@ -28,9 +28,9 @@ centered Notion-style panel:
 - **Properties** — the note's frontmatter, editable exactly like the
   table: pill values open the select editor (with the color picker),
   checkboxes toggle in place, text and numbers edit inline.
-- **Body** — rendered as formatted Markdown; click it to edit the
-  source, click away and it renders again. Changes save automatically
-  as you type.
+- **Body** — Obsidian's own Live Preview editor: headings, lists, links
+  and formatting render in place while you type, just like a note tab,
+  and your editor hotkeys work. Changes save automatically as you type.
 
 ![Creating and editing a note in the page panel](docs/asset/panel_demo.gif)
 
@@ -198,6 +198,9 @@ want to nudge one up the list?
   select editor like any other pill property, and date cells open a
   Notion-style calendar, with a time selector for date & time
   properties.
+- ✅ **Live Preview in the page panel** (1.0) — the panel's body
+  is a real Live Preview editor, so notes stay formatted while you edit
+  them.
 - 🔵 **Per-group calculations** (next) — a Calculate row under each group
   when the base is grouped, the way Notion does it.
 - ⚪️ **Board & gallery views** (exploring) — Kanban boards and card
@@ -207,6 +210,26 @@ want to nudge one up the list?
 
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
+
+### 1.0.0
+
+**🎉 GoodBases 1.0.** The table, the page panel, pills, sorting,
+calculations and the date editor are all in place — this release marks
+the plugin as stable.
+
+**✍️ New — Live Preview in the page panel.** The body of a note opened
+in the page panel is now Obsidian's own Live Preview editor. Headings,
+lists, links and formatting stay rendered while you type, instead of
+switching to raw Markdown the moment you start editing.
+
+- **Added:** editor hotkeys (bold, italic, toggle checklist…) work in the
+  panel's body.
+- **Added:** Enter on the title moves the caret straight into the body,
+  and clicking below the text places it at the end.
+- **Changed:** following a link from the body opens the note in the
+  workspace and closes the panel so you can see it.
+- **Changed:** the body always uses Live Preview, even if your vault's
+  default editing mode is Source.
 
 ### 0.9.0
 
