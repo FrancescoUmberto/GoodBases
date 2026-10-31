@@ -1218,3 +1218,10 @@
    outside this plugin's view, so it ships as opt-in rather than being
    injected document-wide. See the README ("Optional: Notion-style
    toolbar"). */
+
+/* Wikilink pills open their note on click. */
+.ntn-pill.ntn-link-pill {
+	cursor: pointer;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
