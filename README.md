@@ -58,6 +58,9 @@ centered Notion-style panel:
   `file.tags`, or any tag-typed value) opens the search pane for that tag
   when clicked, exactly like tags in the built-in table and in your
   notes. It works in group headers and in the page panel too.
+- **Clickable note links** — a pill holding a link (`[[Projects/Launch]]`,
+  `[[note|alias]]`) shows the note's name or alias and opens the note
+  when clicked; Cmd/Ctrl-click opens it in a new tab.
 - **Inline editing** — click a cell to edit text and numbers in a
   floating input; checkboxes toggle in place. Pill cells — `tags`
   included — open a select-style menu listing every value already used
@@ -94,9 +97,14 @@ centered Notion-style panel:
 - **Choose the Name column icon** — keep Notion's page emoji, switch to
   Obsidian's own file icon so it takes your theme's color, name any emoji
   or [Lucide](https://lucide.dev) icon you like, or hide it entirely.
+- **Readable names for slug files** — turn on *Show the title property as
+  the note name* and the Name column shows a note's `title` property
+  (handy with plugins like TaskNotes that name files with slugs). Notes
+  without a `title` keep their file name.
 - **View options** — wrap cell content (on by default), toggle vertical
-  lines, choose how OPEN opens notes, pick the Name column icon, force
-  specific properties to render as pills, and pin pill colors.
+  lines, choose how OPEN opens notes, pick the Name column icon, show
+  the `title` property as the name, force specific properties to render
+  as pills, and pin pill colors.
 
 ## Usage
 
@@ -107,7 +115,8 @@ centered Notion-style panel:
    Bases controls — or sort straight from a column header and pick a
    per-column calculation in the row under the table. This view adds
    its own options (wrapping, vertical lines, open mode, Name column
-   icon, pill properties, pinned colors) in the view settings.
+   icon, title as name, pill properties, pinned colors) in the view
+   settings.
 
 Notes on editing:
 
@@ -210,6 +219,34 @@ want to nudge one up the list?
 
 The full history and downloadable builds are on the
 [Releases page](https://github.com/FrancescoUmberto/GoodBases/releases).
+
+### 1.1.0
+
+**🔗 New — clickable note links in pills.** A list property that holds
+links, like `projects: ["[[Projects/Launch]]"]`, used to show the raw
+`[[Projects/Launch]]` text. The pill now shows the note's name (or the
+link's alias) and opens the note when clicked — Cmd/Ctrl-click opens it
+in a new tab. Clicking the empty part of the cell still opens the select
+editor.
+
+**🏷️ New — show the `title` property as the name.** Plugins such as
+TaskNotes give notes slug file names (`buy-uk-sims-in-bulk.md`) and keep
+the readable name in a `title` property. Turn on the new *Show the title
+property as the note name* view option and the Name column shows that
+title instead. It is off by default, so existing bases look the same;
+notes without a `title` keep their file name, and sorting by Name still
+uses the file name.
+
+- **Fixed:** empty list and pill cells no longer show a "null" pill, and
+  the select editor no longer offers "null" as a value.
+- **Fixed:** clicking an empty date cell opens the calendar instead of a
+  text editor showing "null".
+- **Fixed:** adding `file.name` to a view (so the toolbar search matches
+  note names) no longer shows the name twice — the Name column already
+  covers it, and search still works.
+
+Thanks to [0xBison](https://github.com/0xBison) for all four of these
+(#8, #9, #10, #11).
 
 ### 1.0.0
 

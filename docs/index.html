@@ -221,8 +221,39 @@
 
 			<details class="release" open>
 				<summary>
-					<span class="ver">1.0.0</span>
+					<span class="ver">1.1.0</span>
 					<span class="tag">Latest</span>
+					<span class="tag major">Major</span>
+				</summary>
+				<div class="body">
+					<p class="headline"><strong>New — clickable note links in
+						pills.</strong> A list property that holds links, like
+						<code>projects: ["[[Projects/Launch]]"]</code>, used to show the
+						raw <code>[[Projects/Launch]]</code> text. The pill now shows the
+						note's name (or the link's alias) and opens the note when
+						clicked — Cmd/Ctrl-click opens it in a new tab.</p>
+					<p class="headline"><strong>New — show the <code>title</code>
+						property as the name.</strong> For plugins such as TaskNotes that
+						give notes slug file names, the new <em>Show the title property
+						as the note name</em> view option makes the Name column show the
+						note's <code>title</code> instead. It is off by default, and
+						sorting by Name still uses the file name.</p>
+					<ul>
+						<li>Empty list and pill cells no longer show a "null" pill, and
+							the select editor no longer offers "null" as a value.</li>
+						<li>Clicking an empty date cell opens the calendar instead of a
+							text editor showing "null".</li>
+						<li>Adding <code>file.name</code> to a view (so the toolbar search
+							matches note names) no longer shows the name twice.</li>
+					</ul>
+					<p>Thanks to <a href="https://github.com/0xBison">0xBison</a> for
+						all four of these.</p>
+				</div>
+			</details>
+
+			<details class="release">
+				<summary>
+					<span class="ver">1.0.0</span>
 					<span class="tag major">Major</span>
 				</summary>
 				<div class="body">
