@@ -226,7 +226,9 @@ export class NotionTableView extends BasesView {
 		this.renderTitleIcon(titleWrap);
 		const link = titleWrap.createSpan({
 			cls: 'ntn-title-text',
-			text: entry.file.basename,
+			// Prefer a `title` frontmatter property (e.g. TaskNotes' title) over
+			// the file name, which is often a slug.
+			text: String(this.app.metadataCache.getFileCache(entry.file)?.frontmatter?.title || entry.file.basename),
 		});
 		link.addEventListener('click', (evt) => {
 			void this.app.workspace.openLinkText(
