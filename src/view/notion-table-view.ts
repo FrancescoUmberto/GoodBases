@@ -650,14 +650,16 @@ export class NotionTableView extends BasesView {
 		// ---- Dates: the calendar editor ----
 		// A cell holding a date value, or an empty cell of a property the
 		// vault registers as a date (so the first date can be picked too).
+		// Bases hands an empty cell over as a `NullValue`, not `null`.
+		const isEmpty = value === null || value instanceof NullValue;
 		const isDate = value instanceof DateValue ||
-			(value === null && isDateWidget(propertyWidget(this.app, propName)));
+			(isEmpty && isDateWidget(propertyWidget(this.app, propName)));
 		if (isDate) {
 			td.addEventListener('click', () => this.openDateAt({
 				anchor: td,
 				file: entry.file,
 				propName,
-				current: value ? value.toString() : '',
+				current: value === null || value instanceof NullValue ? '' : value.toString(),
 			}));
 			this.editor?.reanchorIfMatches(td, entry.file.path, prop);
 			return;
