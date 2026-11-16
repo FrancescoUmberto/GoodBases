@@ -146,7 +146,9 @@ export class NotionTableView extends BasesView {
 		root.toggleClass('ntn-wrap', this.config.get('wrapCells') !== false);
 		root.toggleClass('ntn-vlines', this.config.get('verticalLines') !== false);
 
-		const props = this.config.getOrder();
+		// The Name column already shows the file; a `file.name` column (added so
+		// the Bases toolbar search matches names) would duplicate it.
+		const props = this.config.getOrder().filter((p) => p !== TITLE_SORT_PROPERTY);
 		this.pills = computePillProps(props, this.data.data, this.config, this.app);
 		this.pinnedColors = parsePinnedColors(this.config.get('pinnedColors'));
 		this.columnWidths = parseColumnWidths(this.config.get('columnWidths'));
