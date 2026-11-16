@@ -608,6 +608,20 @@ export class NotionTableView extends BasesView {
 			for (const item of valueToItems(value)) {
 				const pill = wrap.createSpan({ cls: 'ntn-pill' });
 				this.applyPillColor(pill, item.text);
+				// A `[[path]]` / `[[path|alias]]` item renders as the note's name
+				// (or alias) and opens the note; the cell's empty space still edits.
+				const link = /^\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]*))?\]\]$/.exec(item.text.trim());
+				if (link) {
+					const target = link[1].trim();
+					pill.setText(link[2] || target.split('/').pop() || target);
+					pill.addClass('ntn-link-pill');
+					pill.setAttr('title', target);
+					pill.addEventListener('click', (evt) => {
+						evt.stopPropagation();
+						void this.app.workspace.openLinkText(target, entry.file.path, evt.ctrlKey || evt.metaKey);
+					});
+					continue;
+				}
 				pill.setText(item.text.replace(/^#/, ''));
 				if (item.isTag) this.makeTagPill(pill, item.text);
 			}
