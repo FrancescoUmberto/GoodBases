@@ -47,6 +47,12 @@ export function buildViewOptions(_config: BasesViewConfig): BasesAllOptions[] {
 			displayName: 'Custom Name column icon — an emoji, or a Lucide icon name like file-text',
 		},
 		{
+			type: 'toggle',
+			key: 'nameFromTitle',
+			displayName: 'Show the title property as the note name',
+			default: false,
+		},
+		{
 			type: 'multitext',
 			key: 'pillProperties',
 			displayName: 'Properties to show as colored pills',

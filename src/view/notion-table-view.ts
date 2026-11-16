@@ -214,6 +214,22 @@ export class NotionTableView extends BasesView {
 		newRow.addEventListener('click', () => void this.createAndOpenPage());
 	}
 
+	/**
+	 * The text the Name column shows for a note: its file name, or — with the
+	 * `nameFromTitle` view option on — a non-empty `title` frontmatter
+	 * property (plugins like TaskNotes keep a readable title there and a slug
+	 * as the file name). Lists/objects are ignored rather than stringified.
+	 * Sorting by Name still uses `file.name`.
+	 */
+	private displayName(file: TFile): string {
+		if (this.config.get('nameFromTitle') === true) {
+			const title: unknown = this.app.metadataCache.getFileCache(file)?.frontmatter?.title;
+			if (typeof title === 'number') return String(title);
+			if (typeof title === 'string' && title.trim()) return title.trim();
+		}
+		return file.basename;
+	}
+
 	private renderRow(
 		tbody: HTMLElement,
 		entry: BasesEntry,
@@ -228,9 +244,7 @@ export class NotionTableView extends BasesView {
 		this.renderTitleIcon(titleWrap);
 		const link = titleWrap.createSpan({
 			cls: 'ntn-title-text',
-			// Prefer a `title` frontmatter property (e.g. TaskNotes' title) over
-			// the file name, which is often a slug.
-			text: String(this.app.metadataCache.getFileCache(entry.file)?.frontmatter?.title || entry.file.basename),
+			text: this.displayName(entry.file),
 		});
 		link.addEventListener('click', (evt) => {
 			void this.app.workspace.openLinkText(
